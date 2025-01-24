@@ -1,20 +1,36 @@
-local PromptM = nil
-local PromptF = nil
-local PromptOK = nil
-local promptGroup = GetRandomIntInRange(0, 0xffffff)
-
-local Prompt = nil
-local promptGroup2 = GetRandomIntInRange(0, 0xffffff)
-
-playingAnimation = false
+playerIllness = nil
+clothes = {}
+-- local Prompt = nil
+-- local promptGroup = GetRandomIntInRange(0, 0xffffff)
 function debugPrint(msg)
     if Config.Debug then
-        print("^1[SCRIPT]^0 " .. msg)
+        print("^1[aprts_medicalAtention]^0 " .. msg)
     end
 end
+TempCompensation = 0
+otherPlayer = nil
+otherPlayerIllness = nil
+diagnosis = {
+    poslech = {
+        done = false,
+        parts = {"teplota", "jazyk", "mandle"}
+    },
+    usta = {
+        done = false,
+        parts = {"uzliny", "krk", "plice", "tep"}
+    },
+    hmat = {
+        done = false,
+        parts = {"hlen", "oci", "nos", "kuze", "vyrazka", "nekroza"}
+    },
+    detaily = {
+        done = false,
+        parts = {"poceni", "bricho"}
+    }
+}
 
 function notify(text)
-    TriggerEvent('notifications:notify', "SCRIPT", text, 3000)
+    TriggerEvent('notifications:notify', "NEMOC", text, 10000)
 end
 
 function table.count(tbl)
@@ -25,324 +41,417 @@ function table.count(tbl)
     return count
 end
 
-local function LoadModel(model)
-    local model = GetHashKey(model)
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        RequestModel(model)
-        Citizen.Wait(10)
+-- local function prompt()
+--     Citizen.CreateThread(function()
+--         local str = "Sběr Dehtu"
+--         local wait = 0
+--         Prompt = Citizen.InvokeNative(0x04F97DE45A519419)
+--         PromptSetControlAction(Prompt, 0x760A9C6F)
+--         str = CreateVarString(10, 'LITERAL_STRING', str)
+--         PromptSetText(Prompt, str)
+--         PromptSetEnabled(Prompt, true)
+--         PromptSetVisible(Prompt, true)
+--         PromptSetHoldMode(Prompt, true)
+--         PromptSetGroup(Prompt, promptGroup)
+--         PromptRegisterEnd(Prompt)
+--     end)
+-- end
+
+function StartAnimation(Anim)
+    debugPrint("Playing animation: " .. Anim.dict)
+    RequestAnimDict(Anim.dict)
+    while not HasAnimDictLoaded(Anim.dict) do
+        Citizen.Wait(0)
     end
+    TaskPlayAnim(PlayerPedId(), Anim.dict, Anim.name, 1.0, 1.0, -1, 17, 1.0, false, false, false)
 end
 
-local function spawnNPC(model, x, y, z)
-    local modelHash = LoadModel(model)
-    local npc_ped = CreatePed(model, x, y, z, false, false, false, false)
-    PlaceEntityOnGroundProperly(npc_ped)
-    Citizen.InvokeNative(0x283978A15512B2FE, npc_ped, true)
-    print('npc_ped: ' .. npc_ped)
-    SetEntityHeading(npc_ped, 0.0)
-    SetEntityCanBeDamaged(npc_ped, false)
-    SetEntityInvincible(npc_ped, true)
-    FreezeEntityPosition(npc_ped, true)
-    SetBlockingOfNonTemporaryEvents(npc_ped, true)
-    SetEntityCompletelyDisableCollision(npc_ped, false, false)
-
-    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 6)
-    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 0)
-    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 1)
-    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 2)
-
-    SetModelAsNoLongerNeeded(modelHash)
-    return npc_ped
+function EndAnimation(Anim)
+    RemoveAnimDict(Anim.dict)
+    StopAnimTask(PlayerPedId(), Anim.dict, Anim.name, 1.0)
 end
 
--- jobtable = {
---     "woodworker","blacksmith","carpenter"
--- }
-function hasJob(jobtable)
-    local job = LocalPlayer.state.Character.Job
-    for _, v in pairs(jobtable) do
-        if job == v then
-            return true
+function PlayAnimation(Anim)
+    -- print("Playing animation: " .. Anim.dict)
+    FreezeEntityPosition(PlayerPedId(), true)
+    StartAnimation(Anim)
+    Citizen.Wait(Anim.time)
+    EndAnimation(Anim)
+    FreezeEntityPosition(PlayerPedId(), false)
+end
+
+function GetNameOfZone(coords)
+    local name = ""
+    local zone = Citizen.InvokeNative(0x43AD8FC02B429D33, coords.x, coords.y, coords.z, 10)
+
+    -- debugPrint(tostring(zone))
+    for k, v in pairs(Config.States) do
+        if zone == v then
+            name = k
         end
+    end
+
+    return name
+end
+function getTempCompensation()
+    local components = exports.vorp_character:GetAllPlayerComponents()
+
+    local tempCompensation = 0
+    for key, component in pairs(components) do
+        local state = LocalPlayer.state[key]
+
+        if state ~= nil then
+            component.state = state
+            -- print("Component: ",key, component.state)
+            if Config.Components[key] ~= nil and component.state == true then
+                component.tempCompensation = Config.Components[key]
+                tempCompensation = tempCompensation + Config.Components[key]
+            end
+        end
+    end
+    TempCompensation = tempCompensation
+end
+
+Citizen.CreateThread(function()
+    -- prompt()
+    while true do
+        local pause = 1000
+        Citizen.Wait(pause)
+        getTempCompensation()
+        local playerPed = PlayerPedId()
+        local health = GetEntityHealth(playerPed)
+        if playerIllness == nil then
+
+        else
+            playerIllness.duration = playerIllness.duration - 1
+            if playerIllness.duration <= 0 then
+                playerIllness = nil
+                TriggerServerEvent("aprts_medicalAtention:Server:playerGetCured")
+            end
+        end
+
+    end
+end)
+
+function haveStetoskop()
+    if exports["aprts_tools"]:GetEquipedTool() == Config.Tool1 then
+        return true
     end
     return false
 end
--- SetResourceKvp("aprts_vzor:deht", 0)
--- local deht = GetResourceKvpString("aprts_vzor:deht")
 
-local function prompt()
-    Citizen.CreateThread(function()
-        local str = "Budu ženou"
-        local wait = 0
-        PromptF = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(PromptF, Config.KeyF)
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(PromptF, str)
-        PromptSetEnabled(PromptF, true)
-        PromptSetVisible(PromptF, true)
-        PromptSetHoldMode(PromptF, true)
-        PromptSetGroup(PromptF, promptGroup)
-        PromptRegisterEnd(PromptF)
-
-        local str = "Budu mužem"
-        local wait = 0
-        PromptM = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(PromptM, Config.KeyM)
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(PromptM, str)
-        PromptSetEnabled(PromptM, true)
-        PromptSetVisible(PromptM, true)
-        PromptSetHoldMode(PromptM, true)
-        PromptSetGroup(PromptM, promptGroup)
-        PromptRegisterEnd(PromptM)
-
-        local str = "Potvrdit"
-        local wait = 0
-        PromptOK = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(PromptOK, Config.KeyOK)
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(PromptOK, str)
-        PromptSetEnabled(PromptOK, false)
-        PromptSetVisible(PromptOK, true)
-        PromptSetHoldMode(PromptOK, true)
-        PromptSetGroup(PromptOK, promptGroup)
-        PromptRegisterEnd(PromptOK)
-
-        local str = "Vstoupit do IC"
-        local wait = 0
-        Prompt = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(Prompt, 0xC7B5340A)
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(Prompt, str)
-        PromptSetEnabled(Prompt, true)
-        PromptSetVisible(Prompt, true)
-        PromptSetHoldMode(Prompt, true)
-        PromptSetGroup(Prompt, promptGroup2)
-        PromptRegisterEnd(Prompt)
-    end)
+local function makeSick(illnessName)
+    local illness = Config.Illnesses[illnessName]
+    if illness then
+        notify("Najednou se cítíš mizerně, najdi lékaře!")
+        playerIllness = illness
+        TriggerServerEvent("aprts_medicalAtention:Server:playerGetSick", playerIllness)
+    else
+        debugPrint("Nemoc neexistuje")
+    end
 end
-function playAnim(entity, dict, name, flag, time)
-    playingAnimation = true
-    RequestAnimDict(dict)
-    local waitSkip = 0
-    while not HasAnimDictLoaded(dict) do
-        waitSkip = waitSkip + 1
-        if waitSkip > 100 then
-            break
+
+exports("getSick", makeSick)
+
+local function getCured()
+    playerIllness = nil
+    TriggerServerEvent("aprts_medicalAtention:Server:playerGetCured")
+end
+exports("getCured", getCured)
+
+local function getIllness()
+    return playerIllness
+end
+exports("getIllness", getIllness)
+
+local function getIllnesses()
+    return Config.Illnesses
+end
+
+function infectPlayers()
+    local bandada = LocalPlayer.state.IsBandanaOn
+    if bandada then
+        debugPrint("Nemůžeš nakazit nikoho s bandanou")
+    else
+        debugPrint("Nakazuji hráče")
+        TriggerServerEvent("aprts_medicalAtention:Server:infectPlayers", playerIllness, GetEntityCoords(PlayerPedId()))
+    end
+
+end
+
+function changeHealth(ped, inner, outer)
+    if inner then
+        local health = GetAttributeCoreValue(ped, 0)
+        local newhealth = health + inner
+
+        if (newhealth > 100) then
+            newhealth = 100
         end
-        Citizen.Wait(0)
-    end
-    TaskPlayAnim(entity, dict, name, 1.0, 1.0, time, flag, 0, true, 0, false, 0, false)
-    Wait(time)
-    playingAnimation = false
-end
 
-function equipProp(model, bone, coords)
-    local ped = PlayerPedId()
-    local playerPos = GetEntityCoords(ped)
-    local mainProp = CreateObject(model, playerPos.x, playerPos.y, playerPos.z + 0.2, true, true, true)
-    local boneIndex = GetEntityBoneIndexByName(ped, bone)
-    AttachEntityToEntity(mainProp, ped, boneIndex, coords.x, coords.y, coords.z, coords.xr, coords.yr, coords.zr, true,
-        true, false, true, 1, true)
-    return mainProp
-end
-
-function loadBody(gender)
-    SkinColorTracker = SkinColorTracker
-    local SkinColor = Config.DefaultChar[gender][SkinColorTracker]
-    local legs = tonumber("0x" .. SkinColor.Legs[LegsTypeTracker])
-    local bodyType = tonumber("0x" .. SkinColor.Body[BodyTypeTracker])
-    local heads = tonumber("0x" .. SkinColor.Heads[HeadIndexTracker])
-    local headtexture = joaat(SkinColor.HeadTexture[1])
-    local albedo = Config.texture_types[gender].albedo
-    IsPedReadyToRender()
-    ApplyShopItemToPed(heads)
-    ApplyShopItemToPed(bodyType)
-    ApplyShopItemToPed(legs)
-    Citizen.InvokeNative(0xC5E7204F322E49EB, albedo, headtexture, 0x7FC5B1E1)
-    UpdatePedVariation()
-end
-
-function GetName(Result)
-    local splitString = {}
-    for i in string.gmatch(Result, "%S+") do
-        splitString[#splitString + 1] = i
+        Citizen.InvokeNative(0xC6258F41D86676E0, ped, 0, newhealth)
+        debugPrint("Změna vnitřního zdraví na: " .. newhealth)
     end
-
-    if #splitString < 2 then
-        return false
+    if outer then
+        local health = GetEntityHealth(ped, 0)
+        local newhealth = health + outer
+        SetEntityHealth(ped, newhealth, 0)
+        debugPrint("Změna vnějšího zdraví na: " .. newhealth)
     end
-
-    for _, word in ipairs(Config.BannedNames) do
-        if string.find(splitString[1], word) or string.find(splitString[2], word) then
-            return nil
-        end
-    end
-    local lastname = splitString[1]
-    
-    if table.count(splitString) > 1 then
-        lastname = splitString[2]
-    end
-    return splitString[1], lastname
 end
 
 Citizen.CreateThread(function()
-    prompt()
     while true do
-        local pause = 1000
-        local playerPed = PlayerPedId()
-        if InCharacterCreator == true then
-            pause = 0
-            PromptSetActiveGroupThisFrame(promptGroup, CreateVarString(10, 'LITERAL_STRING', "Pohlaví"))
-            if PromptHasHoldModeCompleted(PromptF) then
-                CreatePlayerModel("mp_female")
-                PromptSetEnabled(PromptOK, true)
-            end
-            if PromptHasHoldModeCompleted(PromptM) then
-                CreatePlayerModel("mp_male")
-                PromptSetEnabled(PromptOK, true)
-            end
-            if PromptHasHoldModeCompleted(PromptOK) then
-                CreateMenu()
-                -- FreezeEntityPosition(PlayerPedId(), false)
-
-                -- if Camera then
-                --     RenderScriptCams(false, false, 0, 1, 0)
-                --     DestroyCam(Camera, false)
-                --     Camera = nil
-                -- end
-                -- NetworkEndTutorialSession()
-                -- TriggerServerEvent("murphy_clothing:instanceplayers", 0)
-                InCharacterCreator = false
-                Playerdata.gender = GetGender()
-                playAnim(PlayerPedId(), "amb_generic@world_human_generic_standing@lf_fwd@male_a@base", "base", 1, -1)
-                jo.menu.setCurrentMenu(menuID)
-                jo.menu.show(true)
-            end
-        end
+        local pause = 1000 * 60 * 1
         Citizen.Wait(pause)
-    end
-end)
--- 
-NPC = nil
-Citizen.CreateThread(function()
-
-    while true do
-        local pause = 1000
-
         local playerPed = PlayerPedId()
-        local playerPos = GetEntityCoords(playerPed)
-        local distance = Vdist2(playerPos.x, playerPos.y, playerPos.z, Config.NPC.coords.x, Config.NPC.coords.y,
-            Config.NPC.coords.z)
-        if distance < 100.0 then
-            if not DoesEntityExist(NPC) then
-                NPC = spawnNPC(Config.NPC.model, Config.NPC.coords.x, Config.NPC.coords.y, Config.NPC.coords.z)
-                TaskStartScenarioInPlace(NPC, Config.NPC.sceneario, 0, true)
-                SetEntityHeading(NPC, Config.NPC.heading)
+        if playerIllness then
+            TriggerServerEvent("aprts_medicalAtention:Server:updateTime", playerIllness.duration)
+            local anim = {}
+            anim.dict = playerIllness.symptoms.animDict
+            anim.name = playerIllness.symptoms.animBody
+            anim.time = playerIllness.symptoms.animTime
+            -- if IsPedOnMount(playerPed) then
+            --     if playerIllness.symptoms.horseDict then
+            --         anim.dict = playerIllness.symptoms.horseDict
+            --         anim.name = playerIllness.symptoms.horseBody
+            --     end
+            -- end
+            -- random chance to play Animation
+            local chance = math.random(1, 100)
+
+            if chance <= 60 then
+                local stamina = GetAttributeCoreValue(PlayerPedId(), 1)
+                debugPrint("Stamina: " .. stamina)
+                local health = GetEntityHealth(playerPed)
+                debugPrint("Health: " .. health)
+                SetAttributeCoreValue(PlayerPedId(), 1, stamina + playerIllness.symptoms.stamina)
+
+                stamina = GetAttributeCoreValue(PlayerPedId(), 1)
+                debugPrint("Stamina: " .. stamina)
+                debugPrint("Snižuji vodu o : " .. playerIllness.symptoms.water)
+                debugPrint("Snižuji jídlo o : " .. playerIllness.symptoms.food)
+
+                changeHealth(playerPed, playerIllness.symptoms.innerHealth, playerIllness.symptoms.outerHealth)
+                TriggerEvent('vorpmetabolism:changeValue', 'Thirst', playerIllness.symptoms.water)
+                TriggerEvent('vorpmetabolism:changeValue', 'Hunger', playerIllness.symptoms.food)
+                PlayAnimation(anim)
+                infectPlayers()
             end
+
         else
-            if DoesEntityExist(NPC) then
-                DeleteEntity(NPC)
-                NPC = 0
+            if GetTemperatureAtCoords(GetEntityCoords(playerPed)) + TempCompensation <= Config.ColdTemp then
+                if Config.StaminaBorder >= GetAttributeCoreValue(PlayerPedId(), 1) then
+                    debugPrint("Stamina: " .. GetAttributeCoreValue(PlayerPedId()))
+                    for _, illness in pairs(Config.Illnesses) do
+                        local chance = math.random(1, 100)
+                        local rain = GetRainLevel() > 0.0
+                        local snow = GetSnowLevel() > 0.0
+                        local stateChance =
+                            Config.stateIllnesses[GetNameOfZone(GetEntityCoords(playerPed))][illness.name]
+                        debugPrint("Chance: " .. chance .. " Illness chance: " .. illness.chance .. " State Chance " ..
+                                       stateChance)
+                        if IsEntityInWater(playerPed) then
+                            chance = chance - 30
+                        end
+                        if rain then
+                            chance = chance - 5
+                        end
+                        if snow then
+                            chance = chance - 15
+                            -- SetSnowCoverageType(2)
+                        end
+                        if chance <= illness.chance + stateChance then
+                            notify("Najednou se cítíš mizerně, najdi lékaře!")
+                            debugPrint("Najednou se cítíš mizerně, najdi lékaře!" .. illness.name)
+                            playerIllness = illness
+                            TriggerServerEvent("aprts_medicalAtention:Server:playerGetSick", playerIllness)
+                            break
+                        end
+                    end
+                end
             end
         end
-        if distance < 2.0 then
-            local name = CreateVarString(10, 'LITERAL_STRING', "OOC => IC")
-            PromptSetActiveGroupThisFrame(promptGroup2, name)
-
-            if PromptHasHoldModeCompleted(Prompt) then
-                SetEntityCoords(playerPed, Config.NPC.targetCoords.x, Config.NPC.targetCoords.y,
-                    Config.NPC.targetCoords.z)
-                NetworkEndTutorialSession()
-                TriggerServerEvent("murphy_clothing:instanceplayers", 0)
-                NetworkEndTutorialSession()
-                TriggerServerEvent('aprts_charCreator:Server:defaults')
-            end
-
-            pause = 0
-        end
-        Citizen.Wait(pause)
     end
 end)
+local function playHealingAnimation(ped,duration)
+    local animationDict = "mini_games@story@mob4@heal_jules@bandage@arthur"
+    local animationName = "bandage_fast"
 
--- 
-Citizen.CreateThread(function()
-    while PlayerPedId() == 0 do
-        print(PlayerPedId())
-        Citizen.Wait(0)
+    -- Load the animation dictionary
+    RequestAnimDict(animationDict)
+    while not HasAnimDictLoaded(animationDict) do
+        Wait(100)
     end
-    local x, y, z = Config.Camera.lookAt.x, Config.Camera.lookAt.y, Config.Camera.lookAt.z + 1.0
-    local camx, camy, camz = Config.Camera.coords.x, Config.Camera.coords.y, Config.Camera.coords.z
-    local minZ = z - 1.5
-    local maxZ = z + 1.5
-    local minY = y - 1.5
-    local maxY = y + 1.5
-    local minmax = 1.5
-    print("Getting heading")
-    local heading = GetEntityHeading(PlayerPedId())
-    print("player heading" .. heading)
-    while true do
-        local pause = 1000
 
-        if Camera then
-            PointCamAtCoord(Camera, x, y, z)
-            SetCamCoord(Camera, camx, camy, camz)
-            if IsDisabledControlPressed(0, Config.KeyUP) then
-                camz = camz + 0.01
-                if camz > camz + minmax then
-                    camz = camz + minmax
-                end
-                z = z + 0.01
-                if z > maxZ then
-                    z = maxZ
-                end
+    -- Play the animation
+    TaskPlayAnim(ped, animationDict, animationName, 1.0, 1.0, duration, 1, 0, false, false, false)
+end
 
-            end
-            if IsDisabledControlPressed(0, Config.KeyDOWN) then
-                camz = camz - 0.01
-                if camz < camz - minmax then
-                    camz = camz - minmax
-                end
-                z = z - 0.01
-                if z < minZ then
-                    z = minZ
-                end
-            end
-            if IsDisabledControlPressed(0, 0xB4E465B4) then
-                -- SetCamFov(Camera, GetCamFov(Camera) - 1.0)0xB4E465B4
-                y = y - 0.01
-                if y < minY then
-                    y = minY
-                end
-            end
-            if IsDisabledControlPressed(0, 0x7065027D) then
-                -- SetCamFov(Camera, GetCamFov(Camera) + 1.0)
-                y = y + 0.01
-                if y > maxY then
-                    y = maxY
-                end
-            end
-            if IsDisabledControlPressed(0, 0x8FFC75D6) then
-                SetCamFov(Camera, GetCamFov(Camera) - 1.0)
+function healSelf(percent)
+    -- Input validation
+    if type(percent) ~= "number" or percent <= 0 then
+        print("healSelf: Invalid percentage value.")
+        return
+    end
 
-            end
-            if IsDisabledControlPressed(0, 0x8AAA0AD4) then
-                SetCamFov(Camera, GetCamFov(Camera) + 1.0)
+    local playerPed = PlayerPedId()
+    if not DoesEntityExist(playerPed) then
+        print("healSelf: Player Ped does not exist.")
+        return
+    end
 
+    -- Získání aktuálního innerHealth
+    local innerHealth = Citizen.InvokeNative(0x36731AC041289BB1, playerPed, 0)
+    innerHealth = tonumber(innerHealth) or 0
+    innerHealth = math.max(0, math.min(MAX_INNER_HEALTH, innerHealth)) -- Omezení mezi 0 a MAX_INNER_HEALTH
+
+    -- Získání aktuálního entityHealth
+    local entityHealth = GetEntityHealth(playerPed)
+    entityHealth = tonumber(entityHealth) or 0
+    entityHealth = math.max(0, math.min(MAX_ENTITY_HEALTH, entityHealth)) -- Omezení mezi 0 a MAX_ENTITY_HEALTH
+
+    -- Výpočet množství zdraví k přidání
+    local innerHealAmount = percent -- InnerHealth max je 100, takže přímo procento
+    local entityHealAmount = (percent / 100) * MAX_ENTITY_HEALTH -- Procento z 600
+
+    -- Výpočet nových hodnot zdraví, zajištění nepřekročení maxima
+    local newInnerHealth = math.min(MAX_INNER_HEALTH, innerHealth + innerHealAmount)
+    local newEntityHealth = math.min(MAX_ENTITY_HEALTH, entityHealth + entityHealAmount)
+
+    -- Zjištění skutečného množství vyléčeného zdraví
+    local actualInnerHeal = newInnerHealth - innerHealth
+    local actualEntityHeal = newEntityHealth - entityHealth
+
+    -- Kontrola, zda je třeba léčit
+    if actualInnerHeal <= 0 and actualEntityHeal <= 0 then
+        print("healSelf: Zdraví je již na maximum.")
+        return
+    end
+
+   
+
+    -- Aktualizace innerHealth
+    Citizen.InvokeNative(0xC6258F41D86676E0, playerPed, 0, newInnerHealth)
+
+    -- Aktualizace entityHealth
+    SetEntityHealth(playerPed, math.floor(newEntityHealth), playerPed)
+
+    -- Čekání na dokončení léčení (můžete upravit dle potřeby)
+    local healingDuration = percent * 1000 -- Např. 15 * 100 = 1500 ms (1.5 sekundy)
+     -- Přehrání léčení animace
+     playHealingAnimation(playerPed,healingDuration)
+    Wait(healingDuration)
+
+    -- Volitelné: Znovu nastavení nebo další akce po léčení
+    -- Citizen.InvokeNative(0xC6258F41D86676E0, playerPed, 0, 1) -- Příklad: Reset AttributeCoreValue
+
+    print(string.format("healSelf: Vyléčeno %d%%. Nové Inner Health: %d, Nové Entity Health: %d", percent,
+        newInnerHealth, math.floor(newEntityHealth)))
+end
+
+function GetClosestPlayer(DoctorPed)
+    local players = GetActivePlayers()
+    local closestDistance = 2.01
+    local closestPlayer = -1
+
+    for index, value in ipairs(players) do
+        local target = GetPlayerPed(tonumber(value))
+        if (target ~= DoctorPed) then
+            local distance = #(GetEntityCoords(GetPlayerPed(value)) - GetEntityCoords(DoctorPed))
+            if (closestDistance == -1 or closestDistance > distance) then
+                closestPlayer = value
+                closestDistance = distance
             end
-            if IsDisabledControlPressed(0, 0xB2F377E8) and IsInputDisabled(0) then -- 1  slot
-                heading = heading + 1.0
-                SetEntityHeading(PlayerPedId(), heading)
-            end
-            if IsDisabledControlPressed(0, 0x760A9C6F) and IsInputDisabled(0) then -- 1  slot
-                heading = heading - 1.0
-                SetEntityHeading(PlayerPedId(), heading)
-            end
-            pause = 0
         end
+    end
 
-        Citizen.Wait(pause)
+    return closestPlayer
+end
 
+function healPatient(percent)
+    local DoctorPed = GetPlayerPed(PlayerId())
+    local closePlayer = GetClosestPlayer(DoctorPed)
+    local closePed = GetPlayerPed(closePlayer)
+    local nearestPlayer = GetNearestPlayerToEntity(closePed)
+    local nearestPlayerServerId = GetPlayerServerId(nearestPlayer)
+    local health = GetEntityHealth(closePed)
+    local newHealth = health + percent * 5
+    local doctorCoords = GetEntityCoords(DoctorPed)
+    local targetPed = GetEntityCoords(closePed)
+    local distance = #(doctorCoords - targetPed)
+
+    if distance < 2.0 then
+        -- PlayAnim(DoctorPed, "script_mp@player@healing", "healing_male")
+        TriggerServerEvent("aprts_medicalAtention:Server:HealPatient", nearestPlayerServerId, newHealth)
+    else
+
+        health = GetEntityHealth(DoctorPed)
+        newHealth = health + percent * 5
+        -- PlayAnim(DoctorPed, "mech_inventory@item@stimulants@inject@quick", "quick_stimulant_inject_rhand")
+        SetEntityHealth(DoctorPed, newHealth)
+        notify("Léčím na  " .. newHealth)
+        -- Citizen.InvokeNative(0xC6258F41D86676E0, DoctorPed, 0, 1)
+    end
+end
+
+function PatientHealing(value)
+    local playerPed = GetPlayerPed(PlayerId())
+
+    SetEntityHealth(playerPed, value)
+end
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local size = GetNumberOfEvents(0)
+        if size > 0 then
+            for i = 0, size - 1 do
+                local event = Citizen.InvokeNative(0xA85E614430EFF816, 0, i) -- GetEventAtIndex
+                -- print("Event: " .. event)
+                if event == 402722103 then -- EVENT_ENTITY_DAMAGED
+                    -- print("Event: " .. event)
+                    local eventDataSize = 9
+                    local eventDataStruct = DataView.ArrayBuffer(128)
+                    eventDataStruct:SetInt32(0, 0) -- damaged                   
+                    eventDataStruct:SetInt32(8, 0) -- Cause Ped Id
+                    eventDataStruct:SetInt32(16, 0) -- WeaponHash
+                    eventDataStruct:SetInt32(24, 0) -- AmmoHash
+
+                    local data = Citizen.InvokeNative(0x57EC5FA4D4D6AFCA, 0, i, eventDataStruct:Buffer(), eventDataSize) -- GetEventData
+                    if data then
+                        local damaged = eventDataStruct:GetInt32(0)
+                        local causePedId = eventDataStruct:GetInt32(8)
+                        local weaponHash = eventDataStruct:GetInt32(16)
+                        local ammoHash = eventDataStruct:GetInt32(24)
+                        if damaged == PlayerPedId() then
+
+                            debugPrint("Cause Ped Id: " .. causePedId)
+                            debugPrint("Weapon Hash: " .. weaponHash)
+                            debugPrint("Ammo Hash: " .. ammoHash)
+                            if weaponHash == GetHashKey("weapon_snake") then
+                                local health = GetEntityHealth(PlayerPedId())
+                                local newHealth = health - 10
+                                SetEntityHealth(PlayerPedId(), newHealth)
+                                notify("Kousl tě had!")
+                                local chance = math.random(1, 100)
+                                if chance <= 50 then
+                                    if playerIllness == nil then
+                                        playerIllness = Config.Illnesses["badblood"]
+                                        TriggerServerEvent("aprts_medicalAtention:Server:playerGetSick", playerIllness)
+                                    else
+                                        if playerIllness.priority < Config.Illnesses["badblood"].priority then
+                                            playerIllness = Config.Illnesses["badblood"]
+                                            TriggerServerEvent("aprts_medicalAtention:Server:playerGetSick",
+                                                playerIllness)
+                                        end
+                                    end
+                                end
+                            end
+
+                        end
+                    end
+                end
+            end
+        end
     end
 end)

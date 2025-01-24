@@ -1,37 +1,17 @@
 MySQL = exports.oxmysql
 Core = exports.vorp_core:GetCore()
+playersIllnesses = {}
+clothes = {}
 
 
 function debugPrint(msg)
     if Config.Debug then
-        print("^1[SCRIPT]^0 " .. msg)
+        print("^1[aprts_medicalAtention]^0 " .. msg)
     end
 end
 function notify(playerId, message)
     TriggerClientEvent('notifications:notify', playerId, "SCRIPT", message, 4000)
 end
-
-function table.count(tbl)
-    local count = 0
-    for _ in pairs(tbl) do
-        count = count + 1
-    end
-    return count
-end
-
-function hasJob(player,jobtable)
-    local job = Player(player).state.Character.Job
-    if job == nil then
-        return false
-    end
-    for _, v in pairs(jobtable) do
-        if job == v then
-            return true
-        end
-    end
-    return false
-end
-
 function GetPlayerName(source)
     local user = Core.getUser(source)
     if not user then
@@ -56,10 +36,6 @@ function getTimeStamp()
     return time
 end
 
-function unixToDateTime(unixTime)
-    return os.date('%Y-%m-%d %H:%M:%S', unixTime)
-end
-
 
 function DiscordWeb(name, message, footer)
     local embed = {{
@@ -77,4 +53,64 @@ function DiscordWeb(name, message, footer)
     }), {
         ['Content-Type'] = 'application/json'
     })
+end
+
+function getPlayerNeckWear(charID)
+    local neckWear = nil
+    MySQL:execute("SELECT compPlayer FROM characters WHERE charidentifier = ?", {charID}, function(result)
+       local comps = json.decode(result[1].compPlayer)
+       if comps.NeckWear then
+           neckWear = comps.NeckWear
+       end
+    end)
+
+    while neckWear == nil do
+        Wait(100)
+    end
+
+    return neckWear
+end
+
+function getPlayersNearCoords(coords, distance)
+    local players = {}
+    for _, player in ipairs(GetPlayers()) do
+        local playerPed = GetPlayerPed(player)
+        local playerCoords = GetEntityCoords(playerPed)
+        local distanceBetween = math.sqrt((coords.x - playerCoords.x)^2 + (coords.y - playerCoords.y)^2 + (coords.z - playerCoords.z)^2)
+        -- debugPrint(distanceBetween)
+        if distanceBetween <= distance then
+            table.insert(players, player)
+        end
+    end
+    return players
+end
+
+
+function IsPlayerMedic(_source)
+    local user = Core.getUser(source)
+    if not user then
+        return "nobody"
+    end
+    local character = user.getUsedCharacter
+    Character = Character.getUsedCharacter  
+    if tostring(Character.job) == Config.Job then
+        return true
+    end
+    return false
+end
+
+
+function HasPlayertJob(_source, job)
+    if job == nil or job == "" then
+        return true
+    end
+    local Character = Core.getUser(_source)
+    if not Character then
+        return
+    end
+    Character = Character.getUsedCharacter
+    if tostring(Character.job) == job then
+        return true
+    end
+    return false
 end

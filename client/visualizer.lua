@@ -19,8 +19,6 @@ function hexToRGB(hex)
     return tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6))
 end
 
-
-
 function DrawTxt(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
     local str = CreateVarString(10, "LITERAL_STRING", str)
     SetTextScale(w, h)
@@ -52,7 +50,6 @@ function DrawText3D(x, y, z, text)
     end
 end
 
-
 function displayData3D(x, y, z, data, showImage, imagePath)
     -- Získání koordinátů na obrazovce a vzdálenosti od kamery
     local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
@@ -60,7 +57,7 @@ function displayData3D(x, y, z, data, showImage, imagePath)
     local dist = GetDistanceBetweenCoords(px, py, pz, x, y, z, 1)
 
     -- Pevná škála, která bere v potaz vzdálenost a fov kamery
-    local scale = (1 / dist) * 2.0
+    local scale = (1 / dist) * 1.0
     local fov = (1 / GetGameplayCamFov()) * 100
     scale = scale * fov
 
@@ -105,17 +102,112 @@ function displayData3D(x, y, z, data, showImage, imagePath)
     end
 end
 
+Citizen.CreateThread(function()
+    while true do
+        local pause = 1000
+        local playerPed = PlayerPedId()
+        local playerPos = GetEntityCoords(playerPed)
+        if otherPlayer then
+            if otherPlayerIllness then
+                -- debugPrint("otherPlayerIllness")
+                local pedPos = GetEntityCoords(otherPlayer)
+                local distance = GetDistanceBetweenCoords(playerPos, pedPos.x, pedPos.y, pedPos.z, true)
+                if distance <= 2.0 then
+                    local data = {}
+                    data[1] = {
+                        text = "Zdraví: " .. GetEntityHealth(otherPlayer),
+                        color = "#ffffff",
+                        line = false,
+                        value = 0
+                    }
+                    data[2] = {
+                        text = "Zmáčkni " .. Config.KeyLabel .. " pro vyšetření",
+                        color = "#ffffff",
+                        line = false,
+                        value = 0
+                    }
+                    for _, diag in pairs(diagnosis) do
+                        if diag.done == true then
+                            debugPrint(json.encode(diag.parts))
+                            for v, part in pairs(diag.parts) do
+                                debugPrint(part .. ": " .. json.encode(otherPlayerIllness.symptoms[part]))
+                                table.insert(data, {
+                                    text = part .. ": " .. tostring(otherPlayerIllness.symptoms[part]),
+                                    color = "#ffffff",
+                                    line = false,
+                                    value = 0
+                                })
+                            end
 
+                        end
+                    end
+                    displayData3D(pedPos.x, pedPos.y, pedPos.z, data, false, nil)
+                    if IsControlJustPressed(0, Config.Key) then
+                        PlayAnimation(Config.Anim)
+                        for _, diag in pairs(diagnosis) do
+                            if diag.done == false then
+                                diag.done = true
+                                break
+                            end
+                        end
+                    end
+                    if IsControlJustPressed(0, Config.Key2) then
+                        otherPlayer = nil
+                        otherPlayerIllness = nil
+                        for _, diag in pairs(diagnosis) do
+                            diag.done = false
+                        end
+                    end
+                    pause = fpsTimer()
+                else
+                    otherPlayer = nil
+                    otherPlayerIllness = nil
+                    for _, diag in pairs(diagnosis) do
+                        diag.done = false
+                    end
+                end
+            end
+        end
+        Citizen.Wait(pause)
+    end
+end)
 
--- Citizen.CreateThread(function()
---     while true do
---         local pause = 1000
+Citizen.CreateThread(function()
+    while true do
+        local pause = 1000
+        if Config.Debug then
+            local playerPed = PlayerPedId()
+            local playerPos = GetEntityCoords(playerPed)
+            local zoneID = Citizen.InvokeNative(0x43AD8FC02B429D33, playerPos.x, playerPos.y, playerPos.z, 10)
+            -- get zone name by ID
+            local zoneName = GetNameOfZone(playerPos)
 
---         local playerPed = PlayerPedId()
---         local playerPos = GetEntityCoords(playerPed)
---         DrawTxt("In Tar Zone: " .. tostring(IsNearTar()).. ". Has Bucket: " .. tostring(hasBucketInHands()), 0.5, 0.01,
---             0.5, 0.5, true, 255, 255, 255, 255, true)
---         pause = fpsTimer()
---         Citizen.Wait(pause)
---     end
--- end)
+            if playerIllness then
+                DrawTxt("Mám nemoc: " .. playerIllness.name .. ". zbývá : " .. playerIllness.duration, 0.5, 0.01,
+                    0.5, 0.5, true, 255, 255, 255, 255, true)
+            end
+            if zoneID then
+                local health = GetEntityHealth(playerPed)
+                local coreHealth = GetAttributeCoreValue(PlayerPedId(), 0)
+                local stamina = GetAttributeCoreValue(PlayerPedId(), 1)
+                local softStamina = math.floor(GetPedStamina(PlayerPedId()))
+                local temp = math.floor(GetTemperatureAtCoords(GetEntityCoords(playerPed)))
+                local wet = tostring(IsEntityInWater(playerPed))
+                local rain = tostring(GetRainLevel() > 0.0)
+                local snow = tostring(GetSnowLevel() > 0.0)
+                local message = "Zóna: " .. zoneName .. "/" .. zoneID .. " Teplota: " .. temp .. "°C, " ..
+                                    " teplota těla " .. temp + TempCompensation .. "°C, " .. " Stamina = " ..
+                                    softStamina .. "/" .. stamina .. " Zdraví: " .. health .. "/" .. coreHealth ..
+                                    ", ve vodě: " .. wet .. " déšť: " .. rain .. " sníh: " .. snow
+                if stamina <= Config.StaminaBorder and temp <= Config.ColdTemp then
+                    DrawTxt(message, 0.5, 0.1, 0.5, 0.5, true, 255, 0, 0, 255, true)
+                else
+                    DrawTxt(message, 0.5, 0.1, 0.5, 0.5, true, 255, 255, 255, 120, true)
+                end
+
+            end
+            pause = fpsTimer()
+        end
+        Citizen.Wait(pause)
+    end
+end)

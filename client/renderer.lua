@@ -18,24 +18,12 @@ local function spawnProp(prop, coords, h)
     return object
 end
 
-local function spawnPed(model, coords)
-    debugPrint('Spawning ped: ' .. model)
-    model = LoadModel(model)
-    local ped = CreatePed(model, coords.x, coords.y, coords.z, 0.0, true, false)
-    Citizen.InvokeNative(0x283978A15512B2FE, ped, true)
-
-    PlaceEntityOnGroundProperly(ped)
-    SetModelAsNoLongerNeeded(model)
-    return ped
-end
-
-
 local function spawnNPC(model, x, y, z)
     local modelHash = LoadModel(model)
     local npc_ped = CreatePed(model, x, y, z, false, false, false, false)
     PlaceEntityOnGroundProperly(npc_ped)
     Citizen.InvokeNative(0x283978A15512B2FE, npc_ped, true)
-    print('npc_ped: ' .. npc_ped)
+    -- print('npc_ped: ' .. npc_ped)
     SetEntityHeading(npc_ped, 0.0)
     SetEntityCanBeDamaged(npc_ped, false)
     SetEntityInvincible(npc_ped, true)
@@ -52,13 +40,28 @@ local function spawnNPC(model, x, y, z)
     return npc_ped
 end
 
-
 Citizen.CreateThread(function()
     while true do
         local pause = 1000
 
         local playerPed = PlayerPedId()
         local playerPos = GetEntityCoords(playerPed)
+        for _, doctor in pairs(Config.NPC) do
+            local distance =
+                GetDistanceBetweenCoords(playerPos, doctor.coords.x, doctor.coords.y, doctor.coords.z, true)
+            if distance < 100 then
+
+                if not DoesEntityExist(doctor.obj) then
+                    doctor.obj = spawnNPC(doctor.model, doctor.coords.x, doctor.coords.y, doctor.coords.z)
+                    SetEntityHeading(doctor.obj, doctor.heading)
+                end
+            else
+                if DoesEntityExist(doctor.obj) then
+                    DeleteEntity(doctor.obj)
+                    doctor.obj = nil
+                end
+            end
+        end
 
         Citizen.Wait(pause)
     end
