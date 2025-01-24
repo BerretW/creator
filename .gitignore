@@ -39,3 +39,7 @@ luac.out
 *.x86_64
 *.hex
 
+/config.json
+/__pycache__/
+/.vscode/
+/cache/
