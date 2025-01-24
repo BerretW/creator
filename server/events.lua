@@ -152,13 +152,7 @@ AddEventHandler("aprts_medicalAtention:Server:Cure", function(pedID, cure)
     TriggerClientEvent("aprts_medicalAtention:Client:Cure", pedID, cure)
 end)
 
--- Heal Patient
-RegisterNetEvent("aprts_medicalAtention:Server:HealPatient")
-AddEventHandler("aprts_medicalAtention:Server:HealPatient", function(target, value)
-    if target > 0 then
-        TriggerClientEvent("aprts_medicalAtention:Client:PatientHealing", target, value)
-    end
-end)
+
 
 RegisterNetEvent("aprts_medicalAtention:Server:revive")
 AddEventHandler("aprts_medicalAtention:Server:revive", function(target, item)

@@ -135,15 +135,8 @@ AddEventHandler("aprts_medicalAtention:Client:healSelf", function(percent)
     healSelf(tonumber(percent))
 end)
 
-RegisterNetEvent("aprts_medicalAtention:Client:healPatient")
-AddEventHandler("aprts_medicalAtention:Client:healPatient", function(percent)
-    healPatient(tonumber(percent))
-end)
 
-RegisterNetEvent("aprts_medicalAtention:Client:PatientHealing")
-AddEventHandler("aprts_medicalAtention:Client:PatientHealing", function(value)
-    PatientHealing(value)
-end)
+
 
 RegisterNetEvent("aprts_medicalAtention:Client:useItem")
 AddEventHandler("aprts_medicalAtention:Client:useItem", function(item)

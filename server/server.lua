@@ -55,21 +55,7 @@ function DiscordWeb(name, message, footer)
     })
 end
 
-function getPlayerNeckWear(charID)
-    local neckWear = nil
-    MySQL:execute("SELECT compPlayer FROM characters WHERE charidentifier = ?", {charID}, function(result)
-       local comps = json.decode(result[1].compPlayer)
-       if comps.NeckWear then
-           neckWear = comps.NeckWear
-       end
-    end)
 
-    while neckWear == nil do
-        Wait(100)
-    end
-
-    return neckWear
-end
 
 function getPlayersNearCoords(coords, distance)
     local players = {}
@@ -86,18 +72,6 @@ function getPlayersNearCoords(coords, distance)
 end
 
 
-function IsPlayerMedic(_source)
-    local user = Core.getUser(source)
-    if not user then
-        return "nobody"
-    end
-    local character = user.getUsedCharacter
-    Character = Character.getUsedCharacter  
-    if tostring(Character.job) == Config.Job then
-        return true
-    end
-    return false
-end
 
 
 function HasPlayertJob(_source, job)

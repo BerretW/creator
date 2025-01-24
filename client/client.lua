@@ -133,12 +133,7 @@ Citizen.CreateThread(function()
     end
 end)
 
-function haveStetoskop()
-    if exports["aprts_tools"]:GetEquipedTool() == Config.Tool1 then
-        return true
-    end
-    return false
-end
+
 
 local function makeSick(illnessName)
     local illness = Config.Illnesses[illnessName]
@@ -368,37 +363,8 @@ function GetClosestPlayer(DoctorPed)
     return closestPlayer
 end
 
-function healPatient(percent)
-    local DoctorPed = GetPlayerPed(PlayerId())
-    local closePlayer = GetClosestPlayer(DoctorPed)
-    local closePed = GetPlayerPed(closePlayer)
-    local nearestPlayer = GetNearestPlayerToEntity(closePed)
-    local nearestPlayerServerId = GetPlayerServerId(nearestPlayer)
-    local health = GetEntityHealth(closePed)
-    local newHealth = health + percent * 5
-    local doctorCoords = GetEntityCoords(DoctorPed)
-    local targetPed = GetEntityCoords(closePed)
-    local distance = #(doctorCoords - targetPed)
 
-    if distance < 2.0 then
-        -- PlayAnim(DoctorPed, "script_mp@player@healing", "healing_male")
-        TriggerServerEvent("aprts_medicalAtention:Server:HealPatient", nearestPlayerServerId, newHealth)
-    else
 
-        health = GetEntityHealth(DoctorPed)
-        newHealth = health + percent * 5
-        -- PlayAnim(DoctorPed, "mech_inventory@item@stimulants@inject@quick", "quick_stimulant_inject_rhand")
-        SetEntityHealth(DoctorPed, newHealth)
-        notify("Léčím na  " .. newHealth)
-        -- Citizen.InvokeNative(0xC6258F41D86676E0, DoctorPed, 0, 1)
-    end
-end
-
-function PatientHealing(value)
-    local playerPed = GetPlayerPed(PlayerId())
-
-    SetEntityHealth(playerPed, value)
-end
 
 CreateThread(function()
     while true do
