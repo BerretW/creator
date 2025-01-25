@@ -1,0 +1,78 @@
+/* editor.css */
+
+#editor-container {
+    width: 800px;
+    margin: 20px auto;
+    background-color: #f3e5ab;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #3e2723;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    color: #3e2723;
+    font-weight: bold;
+}
+
+#book-name {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#book-content {
+    width: 100%;
+    height: 400px;
+    padding: 10px;
+    font-size: 16px;
+    font-family: monospace;
+}
+
+#editor-controls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#editor-controls button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #c19a6b;
+    color: #fff;
+    border: 2px solid #8b5a2b;
+    border-radius: 5px;
+    font-family: 'Old Standard TT', serif;
+}
+
+#editor-controls button:hover {
+    background-color: #8b5a2b;
+}
+
+#book-list-container {
+    margin-top: 40px;
+}
+
+#book-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#book-list li {
+    padding: 10px;
+    background-color: #e0c097;
+    margin-bottom: 5px;
+    cursor: pointer;
+    border: 1px solid #8b5a2b;
+    border-radius: 3px;
+}
+
+#book-list li:hover {
+    background-color: #d3a877;
+}

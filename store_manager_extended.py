@@ -1,1 +1,0 @@
-store_manager_extended.py
