@@ -1,0 +1,94 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background-color: #f0e6d2;
+    width: 700px;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  .toolbar {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      background-color: #d2b48c;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      
+  }
+  .toolbar button, .toolbar select{
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #c0a171;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+      .toolbar button:hover{
+          background-color: #a38963;
+  }
+   .toolbar select{
+      padding: 5px 10px;
+  }
+  .diary-container {
+      flex: 1;
+    display: flex;
+    flex-direction: column;
+      padding: 20px;
+  }
+   .page-container {
+        position: relative;
+        overflow: auto;
+        margin-bottom: 20px;
+    }
+    .content {
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.4;
+       margin: 0;
+       padding: 0;
+    height: 100%;
+    outline: none;
+      overflow-wrap: break-word;
+      word-break: break-word;
+        font-family: inherit;
+  }
+   .page-indicator {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+      
+    }
+       .bookmarks{
+       display: flex;
+          align-items: center;
+            height: 30px;
+         overflow: auto;
+         padding: 5px;
+    }
+  .bookmark {
+         display: flex;
+        border: 1px solid #c0a171;
+        background-color: #e6c49c;
+        border-radius: 5px;
+          padding: 5px;
+          margin: 2px;
+          cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+    .bookmark:hover {
+      background-color: #d2b48c;
+  }
