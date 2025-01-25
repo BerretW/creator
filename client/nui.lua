@@ -6,43 +6,58 @@ local currentPage = 1
 local nuiFocus = false
 local pageCount = 0
 local hasPen = false
-
+local diary_id = 0
 function openDiaryNUI(data, colors)
-    if nuiOpen then
-        closeDiaryNUI()
-        return
+  if nuiOpen then
+      closeDiaryNUI()
+      return
+  end
+  -- Transformace dat
+   local transformedData = {
+        custom_name = data.custom_name,
+        pages = data.pages,
+        marks = data.marks or {},
+        data = {}
+    }
+
+  if data.data then
+    for _, pageData in ipairs(data.data) do
+        transformedData.data[pageData.page] = pageData.text
     end
-    currentDiaryData = data
-    currentColors = colors
-    currentPage = 1
-    pageCount = data.pages
-    nuiOpen = true
-    SendNUIMessage({
-        action = "open",
-        data = currentDiaryData,
-        colors = currentColors,
-        page = currentPage,
-        pageCount = pageCount
-    })
-    SetNuiFocus(true, true)
-    nuiFocus = true
+  end
+
+
+  currentDiaryData = transformedData
+  currentColors = colors
+  currentPage = 1
+  pageCount = transformedData.pages
+  nuiOpen = true
+  SendNUIMessage({
+    action = "open",
+    data = currentDiaryData,
+    colors = currentColors,
+    page = currentPage,
+    pageCount = pageCount
+  })
+  SetNuiFocus(true, true)
+  nuiFocus = true
 
 end
 
 function closeDiaryNUI()
-    if not nuiOpen then
-        return
-    end
-    nuiOpen = false
-    currentDiaryData = {}
-    currentColors = {}
-    currentPage = 1
-    pageCount = 0
-    SendNUIMessage({
-        action = "close"
-    })
-    SetNuiFocus(false, false)
-    nuiFocus = false
+  if not nuiOpen then
+      return
+  end
+  nuiOpen = false
+  currentDiaryData = {}
+  currentColors = {}
+  currentPage = 1
+  pageCount = 0
+  SendNUIMessage({
+    action = "close"
+  })
+  SetNuiFocus(false, false)
+  nuiFocus = false
 end
 
 function updatePageInUI(page)
@@ -53,8 +68,21 @@ function updatePageInUI(page)
     })
 end
 RegisterNUICallback('saveData', function(data)
-    currentDiaryData = data
-    debugPrint("Data: " .. json.encode(currentDiaryData))
+    -- Transformace dat před uložením
+    local transformedData = {
+          custom_name = data.custom_name,
+          diary_id = diary_id,
+          pages = data.pages,
+          marks = data.marks or {},
+          data = {}
+      }
+    for page, text in pairs(data.data) do
+        table.insert(transformedData.data, { page = tonumber(page), text = text })
+    end
+
+    currentDiaryData = transformedData
+    debugPrint("Data to save: " .. json.encode(transformedData))
+    TriggerServerEvent('aprts_diary:Server:saveDiary', transformedData)
     -- Zde bude logika pro uložení dat deníku zpět do itemu
 end)
 RegisterNUICallback('changePage', function(direction)
@@ -80,6 +108,7 @@ RegisterNetEvent('aprts_diary:Client:openDiary')
 AddEventHandler('aprts_diary:Client:openDiary', function(data, colors)
     debugPrint("Opening diary")
     debugPrint("Data: " .. json.encode(data))
+    diary_id = data.diary_id
     openDiaryNUI(data, colors)
 end)
 

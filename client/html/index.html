@@ -11,36 +11,45 @@
 </head>
 <body style="display: none;">
     <div class="container">
-      <div class="toolbar">
-         <button data-format="bold" >B</button>
-         <button data-format="italic">I</button>
-         <button data-format="underline">U</button>
-         <button data-format="h1">H1</button>
-         <button data-format="h2">H2</button>
-         <button data-format="h3">H3</button>
-         <select id="fontSelector">
-            <option value="Roboto">Roboto</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-         </select>
-         <button id="textColorButton">Barva textu</button>
-         <input type="color" id="colorPicker" style="display:none" />
+        <div class="toolbar">
+            <button data-format="bold" >B</button>
+            <button data-format="italic">I</button>
+            <button data-format="underline">U</button>
+            <button data-format="h1">H1</button>
+            <button data-format="h2">H2</button>
+            <button data-format="h3">H3</button>
+            <select id="fontSelector">
+                <option value="Roboto">Roboto</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+            <button id="textColorButton">Barva textu</button>
+            <input type="color" id="colorPicker" style="display:none" />
+            <button id="closeButton">Zavřít</button>
+        </div>
+         <div class="diary-container">
+         <div class="title-page" style="display:none;">
+             <h1>Můj deník</h1>
+             <input type="text" id="diaryName" placeholder="Název deníku">
+            <button id="saveNameButton">Uložit název</button>
+             </div>
+            <div class="pages-container" style="display: none;">
+                 <div class="page-container left-page">
+                    <div class="content" contenteditable="true"></div>
+                </div>
+                <div class="page-container right-page">
+                    <div class="content" contenteditable="true"></div>
+                 </div>
+            </div>
+            
+           
+            <div class="page-indicator">
+                <span id="currentPage">1</span> / <span id="pageCount">1</span>
+            </div>
+            <div class="bookmarks">
 
-         <button id="closeButton">Zavřít</button>
-      </div>
-      <div class="diary-container">
-       
-        <div class="page-container">
-            <div class="content" contenteditable="true"></div>
+            </div>
         </div>
-         <div class="page-indicator">
-              <span id="currentPage">1</span> / <span id="pageCount">1</span>
-          </div>
-           <div class="bookmarks">
-               
-        </div>
-      </div>
-       
     </div>
     <script src="script.js"></script>
 </body>

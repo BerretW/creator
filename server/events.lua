@@ -19,3 +19,14 @@ AddEventHandler("onResourceStart", function(resource)
         end
     end
 end)
+
+RegisterServerEvent("aprts_diary:Server:saveDiary")
+AddEventHandler("aprts_diary:Server:saveDiary", function(data)
+    local _source = source
+    -- local user = exports.vorp_core:getUser(_source)
+
+    exports.vorp_inventory:setItemMetadata(_source, data.diary_id, data)
+    notify(_source, "Diary saved")
+    debugPrint("Diary saved")
+
+end)
