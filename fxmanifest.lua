@@ -16,5 +16,6 @@ ui_page "client/html/index.html"
 files {
     "client/html/index.html",
     "client/html/style.css",
-    "client/html/script.js"
+    "client/html/script.js",
+    "client/html/images/*.jpg"
 }

@@ -25,6 +25,10 @@ function table.count(tbl)
     return count
 end
 
+
+
+
+
 function hasJob(player, jobtable)
     local job = Player(player).state.Character.Job
     if job == nil then

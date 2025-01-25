@@ -1,56 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Deník</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body style="display: none;">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Vyber stylový font odpovídající době RDR2 -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Přidáno do <head> -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body style="display: none">
     <div class="container">
-        <div class="toolbar">
-            <button data-format="bold" >B</button>
-            <button data-format="italic">I</button>
-            <button data-format="underline">U</button>
-            <button data-format="h1">H1</button>
-            <button data-format="h2">H2</button>
-            <button data-format="h3">H3</button>
-            <select id="fontSelector">
-                <option value="Roboto">Roboto</option>
-                <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
-            </select>
-            <button id="textColorButton">Barva textu</button>
-            <input type="color" id="colorPicker" style="display:none" />
-            <button id="closeButton">Zavřít</button>
+      <div class="toolbar">
+        <button data-format="bold">B</button>
+        <button data-format="italic">I</button>
+        <button data-format="underline">U</button>
+        <button data-format="h1">H1</button>
+        <button data-format="h2">H2</button>
+        <button data-format="h3">H3</button>
+        <select id="fontSelector">
+          <option value="Cormorant Garamond">Cormorant Garamond</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
+        <button id="textColorButton">Barva textu</button>
+        <input type="color" id="colorPicker" style="display: none" />
+        <button id="closeButton">Zavřít</button>
+      </div>
+      <!-- Přidání navigačních tlačítek -->
+      <div class="navigation-buttons">
+        <button id="prevPageButton">‹ Předchozí</button>
+        <button id="nextPageButton">Další ›</button>
+      </div>
+      <div class="diary-container">
+        <div class="title-page" style="display: none">
+          <h1>Můj deník</h1>
+          <input type="text" id="diaryName" placeholder="Název deníku" />
+          <button id="saveNameButton">Uložit název</button>
         </div>
-         <div class="diary-container">
-         <div class="title-page" style="display:none;">
-             <h1>Můj deník</h1>
-             <input type="text" id="diaryName" placeholder="Název deníku">
-            <button id="saveNameButton">Uložit název</button>
-             </div>
-            <div class="pages-container" style="display: none;">
-                 <div class="page-container left-page">
-                    <div class="content" contenteditable="true"></div>
-                </div>
-                <div class="page-container right-page">
-                    <div class="content" contenteditable="true"></div>
-                 </div>
-            </div>
-            
-           
-            <div class="page-indicator">
-                <span id="currentPage">1</span> / <span id="pageCount">1</span>
-            </div>
-            <div class="bookmarks">
-
-            </div>
+        <div class="pages-container" style="display: none">
+          <div class="page-container left-page">
+            <div class="content" contenteditable="true"></div>
+          </div>
+          <div class="page-container right-page">
+            <div class="content" contenteditable="true"></div>
+          </div>
         </div>
+        <div class="page-indicator">
+          <span id="currentPage">1</span> / <span id="pageCount">1</span>
+        </div>
+        <div class="bookmarks"></div>
+      </div>
     </div>
+    <!-- Přidání knihovny pro Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
