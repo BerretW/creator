@@ -1,178 +1,284 @@
-body {
+/* Reset základních stylů */
+body, html {
   margin: 0;
   padding: 0;
-  font-family: 'Cormorant Garamond', serif; /* Stylový font pro RDR2 */
-  background-color: rgba(30, 30, 30, 0.8); /* Tmavší pozadí pro starší vzhled */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  font-family: 'Cormorant Garamond', serif;
+
+  background-size: cover;
+  background-repeat: no-repeat;
 }
+
+/* Hlavní kontejner */
 .container {
-  background-color: #f5f5dc; /* Parchment-like barva */
-  width: 800px;
-  min-height: 700px;
   display: flex;
   flex-direction: column;
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-  font-family: 'Cormorant Garamond', serif;
+  height: 100%;
 }
+
+/* Toolbar pro formátování textu (plovoucí) */
+.floating-toolbar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(210, 180, 140, 0.9);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1000;
+  display: none; /* Skrytý, zobrazí se při výběru textu */
+}
+
+.floating-toolbar button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.floating-toolbar button:hover {
+  color: #d2b48c;
+}
+
+/* Hlavní toolbar */
 .toolbar {
-  padding: 15px;
   display: flex;
   align-items: center;
-  background-color: #8b4513; /* Hnědá barva odpovídající starší době */
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  background-color: rgba(210, 180, 140, 0.9);
+  padding: 10px;
+  position: relative;
+  z-index: 500;
 }
-.toolbar button, .toolbar select{
+
+.toolbar button, .toolbar select {
   margin-right: 10px;
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: none;
-  background-color: #a0522d;
-  color: #fff;
-  border-radius: 5px;
+  background-color: transparent;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-family: 'Cormorant Garamond', serif;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
-.toolbar button:hover{
-  background-color: #8b4513;
+
+.toolbar button:hover, .toolbar select:hover {
+  background-color: #d2b48c;
 }
-.toolbar select{
-  padding: 8px 12px;
-  background-color: #a0522d;
+
+#bookmarkButton {
+  width: 30px;
+  height: 30px;
+  background-image: url('images/bookmark.png');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
+
+#closeButton {
+  background-color: #ff4c4c;
+  color: white;
+  border-radius: 5px;
+}
+
+#closeButton:hover {
+  background-color: #ff1a1a;
+}
+
+#fontSelector {
+  padding: 5px;
+  border-radius: 5px;
+  background-color: white;
+}
+
+/* Navigační tlačítka */
 .navigation-buttons {
   display: flex;
   justify-content: center;
   margin: 10px 0;
 }
+
 .navigation-buttons button {
   margin: 0 10px;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  background-color: #a0522d;
-  color: #fff;
-  border-radius: 5px;
+  background-color: rgba(210, 180, 140, 0.9);
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-family: 'Cormorant Garamond', serif;
+  border-radius: 5px;
+  font-size: 16px;
 }
+
 .navigation-buttons button:hover {
-  background-color: #8b4513;
+  background-color: #d2b48c;
 }
+
+/* Kontajner pro deník */
 .diary-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 30px;
-  background-image: url('../images/parchment-background.jpg'); /* Předpokládejme, že máš vhodný obrázek */
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
+
+/* Titulní stránka */
 .title-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  padding: 20px;
-  background-color: rgba(245, 245, 220, 0.9); /* Průhledné pozadí */
+  background-image: url('images/cover.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 80%;
+  height: 80%;
+  border: 2px solid #333;
   border-radius: 10px;
+  padding: 20px;
+  box-sizing: border-box;
 }
+
 .title-page h1 {
   margin-bottom: 20px;
-  font-size: 2.5em;
-  color: #654321;
 }
-.title-page input[type="text"] {
+
+.title-page input {
   padding: 10px;
-  border: 2px solid #a0522d;
+  font-size: 18px;
   border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 60%;
   margin-bottom: 10px;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1em;
 }
-.title-page button{
-  padding: 8px 16px;
+
+.title-page button {
+  padding: 10px 20px;
+  font-size: 16px;
   border: none;
-  background-color: #a0522d;
+  background-color: #4CAF50;
   color: white;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-family: 'Cormorant Garamond', serif;
 }
-.title-page button:hover{
-  background-color: #8b4513;
+
+.title-page button:hover {
+  background-color: #45a049;
 }
+
+/* Stránky deníku */
 .pages-container {
   display: flex;
-  flex: 1;
-  margin-bottom: 20px;
-  gap: 20px;
+  width: 80%;
+  height: 80%;
+  border: 2px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
 }
+
 .page-container {
   flex: 1;
-  position: relative;
-  overflow: auto;
-  background-color: rgba(255, 255, 255, 0.8); /* Průhledné pozadí pro text */
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-}
-.left-page {
-  padding-right: 10px;
-}
-.right-page {
-  padding-left: 10px;
-}
-.content {
-  white-space: pre-wrap;
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  outline: none;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  font-family: 'Cormorant Garamond', serif;
-  color: #333;
-}
-.page-indicator {
-  text-align: center;
-  font-size: 14px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: #654321;
-}
-.bookmarks{
   display: flex;
   align-items: center;
-  height: 40px;
-  overflow: auto;
-  padding: 10px;
-  background-color: rgba(245, 245, 220, 0.9);
-  border-radius: 5px;
+  justify-content: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding: 20px;
+  box-sizing: border-box;
 }
-.bookmark {
-  display: flex;
-  border: 2px solid #a0522d;
-  background-color: #deb887;
-  border-radius: 5px;
-  padding: 8px;
-  margin: 2px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-family: 'Cormorant Garamond', serif;
+
+.left-page {
+  background-image: url('images/page_l.png');
+}
+
+.right-page {
+  background-image: url('images/page_p.png');
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  outline: none;
+  font-size: 18px;
   color: #333;
 }
-.bookmark:hover {
+
+/* Indikátor stránky */
+.page-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  background-color: rgba(210, 180, 140, 0.9);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* Záložky */
+.bookmarks-container {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background-color: rgba(210, 180, 140, 0.9);
+  padding: 10px;
+  border-radius: 5px;
+  width: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bookmarks-container h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.bookmarks .bookmark {
+  background-color: #fff8dc;
+  padding: 5px;
+  margin: 5px 0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.bookmarks .bookmark:hover {
   background-color: #d2b48c;
+}
+
+/* Modální okno pro výběr barvy */
+.modal {
+  display: none; /* Skrytý ve výchozím stavu */
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 300px;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
 }
