@@ -1,52 +1,49 @@
+-- File: config.lua
+
 Config = {}
 
-Config.displayDistance = {
-    me = 10,
-    dochat = 10,
-    stav = 60
+-- Definice attachmentů
+Config.Items = {
+    badge_star_1 = {
+        item = 'badge_star_1',
+        model = 'aprts_star_001', -- Model attachmentu
+        coords = {
+            x = 0.04,
+            y = -0.13,
+            z = 0.04,
+            xr = 90.0,
+            yr = 25.0,
+            zr = 990.0
+        },
+        bone = 'CP_Chest', -- Kost, na kterou se attachment připevní
+        job = "sheriff", -- Povolání, které může attachment používat
+        grade = 1, -- Minimální hodnost pro použití
+        jobLabel = "Valentine", -- Popisek práce
+        obj = nil
+    },
+    badge_star_2 = {
+        item = 'badge_star_2',
+        model = 'aprts_star_002', -- Model attachmentu
+        coords = {
+            x = 0.04,
+            y = -0.13,
+            z = 0.04,
+            xr = 90.0,
+            yr = 25.0,
+            zr = 990.0
+        },
+        bone = 'CP_Chest', -- Kost, na kterou se attachment připevní
+        job = "sheriff", -- Povolání, které může attachment používat
+        grade = 1, -- Minimální hodnost pro použití
+        jobLabel = "Valentine", -- Popisek práce
+        obj = nil
+    },
+    -- Přidejte další attachmenty zde
 }
-Config.chatColors = {
-    me = { 255, 140, 236 },
-    dochat = { 169, 14, 138 },
-    stav = { 180, 180, 180 }
-}
-Config.fpsThresholds = {
-    { 20,  3 },
-    { 30,  2 },
-    { 40,  1.5 },
-    { 50,  1.20 },
-    { 60,  1 },
-    { 70,  0.858 },
-    { 80,  0.75 },
-    { 90,  0.6667 },
-    { 100, 0.6 },
-    { 110, 0.546 },
-    { 120, 0.5 },
-    { 130, 0.4 },
-    { 131, 0.3 }
-}
-Config.textScale = 0.18
-Config.textScaleStav = 0.17
 
-Config.UseDiscord = true
+-- Příkaz pro nasazení attachmentu
+Config.AttachCommand = "attach"
 
-Config.ServerName = 'WestHaven RP Chat'
-Config.color = 16753920
-Config.url = 'https://discord.com/api/webhooks/1272232183133765654/Fm_xlGYjdF1Kbc5t3EWL1kGYJIdojYK0JhTJ7ckFqrYpQfJyrkYG4cDoAKribV4PGopw'
+-- Omezení viditelnosti
+Config.VisibleDistance = 50.0 -- Maximální vzdálenost, na kterou budou attachmenty viditelné
 
-
--- LocalPlayer.state.IsInSession -- returns true if player have choosen a character
--- LocalPlayer.state.Character.FirstName 
--- LocalPlayer.state.Character.LastName
--- LocalPlayer.state.Character.Job 
--- LocalPlayer.state.Character.JobLabel 
--- LocalPlayer.state.Character.Grade  
--- LocalPlayer.state.Character.Group 
--- LocalPlayer.state.Character.Age 
--- LocalPlayer.state.Character.Gender
--- LocalPlayer.state.Character.NickName
--- LocalPlayer.state.Character.CharDescription
--- LocalPlayer.state.Character.Money
--- LocalPlayer.state.Character.Gold
--- LocalPlayer.state.Character.Rol
--- LocalPlayer.state.Character.CharId
