@@ -19,6 +19,7 @@ Config.Items = {
         job = "sheriff", -- Povolání, které může attachment používat
         grade = 1, -- Minimální hodnost pro použití
         jobLabel = "Valentine", -- Popisek práce
+        category = "badge", -- Kategorie attachmentu
         obj = nil
     },
     badge_star_2 = {
@@ -33,9 +34,10 @@ Config.Items = {
             zr = 990.0
         },
         bone = 'CP_Chest', -- Kost, na kterou se attachment připevní
-        job = "sheriff", -- Povolání, které může attachment používat
-        grade = 1, -- Minimální hodnost pro použití
-        jobLabel = "Valentine", -- Popisek práce
+        job = false, -- Povolání, které může attachment používat
+        grade = false, -- Minimální hodnost pro použití
+        jobLabel = false, -- Popisek práce
+        category = "badge", -- Kategorie attachmentu
         obj = nil
     },
     -- Přidejte další attachmenty zde
