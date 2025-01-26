@@ -68,6 +68,48 @@ AddEventHandler('aprts_attachments:server:RequestPlayerAttachments', function(pl
     end
 end)
 
+-- Aktualizace pozice attachmentu
+RegisterServerEvent('aprts_attachments:server:UpdateAttachmentPosition')
+AddEventHandler('aprts_attachments:server:UpdateAttachmentPosition', function(item, pos, rot)
+    local _source = source
+
+    if not playerAttachments[_source] then
+        playerAttachments[_source] = {}
+    end
+
+    for _, attachment in ipairs(playerAttachments[_source]) do
+        if attachment.item == item then
+            attachment.coords = pos
+            attachment.rotation = rot
+            break
+        end
+    end
+
+    -- Odeslání aktualizované pozice ostatním hráčům
+    TriggerClientEvent('aprts_attachments:client:UpdateOtherPlayerAttachment', -1, _source, item, pos, rot)
+end)
+
+-- Aktualizace rotace attachmentu
+RegisterServerEvent('aprts_attachments:server:UpdateAttachmentRotation')
+AddEventHandler('aprts_attachments:server:UpdateAttachmentRotation', function(item, pos, rot)
+    local _source = source
+
+    if not playerAttachments[_source] then
+        playerAttachments[_source] = {}
+    end
+
+    for _, attachment in ipairs(playerAttachments[_source]) do
+        if attachment.item == item then
+            attachment.coords = pos
+            attachment.rotation = rot
+            break
+        end
+    end
+
+    -- Odeslání aktualizované rotace ostatním hráčům
+    TriggerClientEvent('aprts_attachments:client:UpdateOtherPlayerAttachment', -1, _source, item, pos, rot)
+end)
+
 -- Čištění dat při odpojení hráče
 AddEventHandler('playerDropped', function(reason)
     local _source = source

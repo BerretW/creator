@@ -7,11 +7,16 @@ games {"rdr3"}
 author 'SpoiledMouse'
 version '1.0'
 description "APRTS Attachments - Synchronizace attachmentů pro RedM"
+ui_page "nui://jo_libs/nui/menu/index.html"
 
+
+
+jo_libs {'menu', 'input'}
 
 client_scripts {
     'config.lua',
-    'client.lua'
+    'client.lua',
+    'editor.lua'
 }
 
 server_scripts {
@@ -20,5 +25,6 @@ server_scripts {
 }
 
 shared_scripts {
+   '@jo_libs/init.lua',
     'config.lua'
 }

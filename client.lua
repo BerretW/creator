@@ -1,6 +1,6 @@
 -- File: client.lua
-local equipedAttachments = {} -- Tabulka pro uchovávání nasazených attachmentů na klientovi
-local playerAttachments = {} -- Tabulka pro uchovávání attachmentů ostatních hráčů
+equipedAttachments = {} -- Tabulka pro uchovávání nasazených attachmentů na klientovi
+playerAttachments = {} -- Tabulka pro uchovávání attachmentů ostatních hráčů
 
 -- Funkce pro zobrazení oznámení
 function notify(text)
@@ -12,7 +12,7 @@ function UnEquipAttachment(item)
     local ped = PlayerPedId()
 
     if equipedAttachments[item] then
-        DeleteObject(equipedAttachments[item])
+        DeleteObject(equipedAttachments[item].obj)
         equipedAttachments[item] = nil
 
         notify("Sundali jste si " .. item)
@@ -48,18 +48,43 @@ function EquipAttachment(Tool)
         return
     end
     if Tool.jobLabel and tostring(playerJobLabel) ~= tostring(Tool.jobLabel) then
-        print("."..playerJobLabel.."." .. " " .. "."..Tool.jobLabel..".")
-        notify("Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel .. " a máš " .. playerJobLabel)
+        print("." .. playerJobLabel .. "." .. " " .. "." .. Tool.jobLabel .. ".")
+        notify(
+            "Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel .. " a máš " ..
+                playerJobLabel)
         return
     end
 
     -- Kontrola a sundání stávajícího attachmentu ve stejné kategorii
-    for equippedItem, obj in pairs(equipedAttachments) do
+    for equippedItem, data in pairs(equipedAttachments) do
         local equippedCategory = Config.Items[equippedItem].category
         if equippedCategory == Tool.category then
             UnEquipAttachment(equippedItem)
             break -- Předpokládáme, že v každé kategorii je pouze jeden attachment
         end
+    end
+
+    -- Načtení vlastní pozice a rotace z KVP (Key-Value Pairs)
+    local customPos = GetResourceKvpString('aprts_attachments_' .. Tool.item .. '_pos') or json.encode(Tool.coords)
+    local customRot = GetResourceKvpString('aprts_attachments_' .. Tool.item .. '_rot') or json.encode({
+        xr = Tool.coords.xr,
+        yr = Tool.coords.yr,
+        zr = Tool.coords.zr
+    })
+    print("Getting KVP: " .. 'aprts_attachments_' .. Tool.item .. '_pos' .. " = " .. customPos)
+    print("Getting KVP: " .. 'aprts_attachments_' .. Tool.item .. '_rot' .. " = " .. customRot)
+    if customPos and customRot then
+        print("Using KVP")
+        customPos = json.decode(customPos)
+        customRot = json.decode(customRot)
+    else
+        print("Using default")
+        customPos = Tool.coords
+        customRot = {
+            xr = Tool.coords.xr,
+            yr = Tool.coords.yr,
+            zr = Tool.coords.zr
+        }
     end
 
     -- Načtení modelu attachmentu
@@ -75,13 +100,16 @@ function EquipAttachment(Tool)
     local x, y, z = table.unpack(GetEntityCoords(ped, true))
     local obj = CreateObjectNoOffset(modelHash, x, y, z + 0.2, false, false, false)
 
-    -- Připojení objektu k modelu hráče
+    -- Připojení objektu k modelu hráče s použitím vlastní pozice a rotace
     local boneIndex = GetEntityBoneIndexByName(ped, Tool.bone)
-    AttachEntityToEntity(obj, ped, boneIndex, Tool.coords.x, Tool.coords.y, Tool.coords.z, 
-        Tool.coords.xr, Tool.coords.yr, Tool.coords.zr, true, true, false, true, 1, true)
+    AttachEntityToEntity(obj, ped, boneIndex, customPos.x, customPos.y, customPos.z, customRot.xr, customRot.yr,
+        customRot.zr, true, true, false, true, 1, true)
 
     -- Uložení attachmentu do tabulky
-    equipedAttachments[Tool.item] = obj
+    equipedAttachments[Tool.item] = {
+        obj = obj,
+        category = Tool.category
+    }
 
     -- Oznámení hráči
     notify("Nasadil jste si " .. Tool.item)
