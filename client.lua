@@ -7,65 +7,6 @@ function notify(text)
     TriggerEvent('notifications:notify', "SCRIPT", text, 3000)
 end
 
--- Funkce pro nasazení attachmentu na lokálního hráče
-function EquipAttachment(Tool)
-    local ped = PlayerPedId()
-
-    -- Kontrola, zda je již attachment nasazen
-    if equipedAttachments[Tool.item] then
-        notify("Již máte tento attachment nasazen.")
-        return
-    end
-
-    -- Kontrola, zda má hráč potřebné povolení
-
-    local playerJob = LocalPlayer.state.Character.Job
-    local playerJobLabel = string.gsub(LocalPlayer.state.Character.JobLabel, " ", "")
-    local playerGrade = LocalPlayer.state.Character.Grade
-
-    if playerJob ~= Tool.job then
-        notify("Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel)
-        return
-    end
-    if playerGrade < Tool.grade then
-        notify("Tento attachment může používat pouze hráči s minimální hodností " .. Tool.grade)
-        return
-    end
-
-    if tostring(playerJobLabel) ~= tostring(Tool.jobLabel) then
-        print("."..playerJobLabel.."." .. " " .. "."..Tool.jobLabel..".")
-        notify("Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel .. " a máš " .. playerJobLabel)
-        return
-    end
-    -- notify("Nemáte oprávnění použít tento attachment.")
-    -- Načtení modelu attachmentu
-    local modelHash = GetHashKey(Tool.model)
-    if not HasModelLoaded(modelHash) then
-        RequestModel(modelHash)
-        while not HasModelLoaded(modelHash) do
-            Wait(0)
-        end
-    end
-
-    -- Vytvoření objektu attachmentu
-    local x, y, z = table.unpack(GetEntityCoords(ped, true))
-    local obj = CreateObjectNoOffset(modelHash, x, y, z + 0.2, true, true, false)
-
-    -- Připojení objektu k modelu hráče
-    local boneIndex = GetEntityBoneIndexByName(ped, Tool.bone)
-    AttachEntityToEntity(obj, ped, boneIndex, Tool.coords.x, Tool.coords.y, Tool.coords.z, Tool.coords.xr,
-        Tool.coords.yr, Tool.coords.zr, true, true, false, true, 1, true)
-
-    -- Uložení attachmentu do tabulky
-    equipedAttachments[Tool.item] = obj
-
-    -- Oznámení hráči
-    notify("Nasadil jste si " .. Tool.item)
-
-    -- Odeslání informací na server pro synchronizaci
-    TriggerServerEvent('aprts_attachments:server:Equip', Tool.item, Tool)
-end
-
 -- Funkce pro sundání attachmentu na lokálního hráče
 function UnEquipAttachment(item)
     local ped = PlayerPedId()
@@ -83,39 +24,71 @@ function UnEquipAttachment(item)
     end
 end
 
-RegisterNetEvent('aprts_attachments:client:toggelAttachement')
-AddEventHandler('aprts_attachments:client:toggelAttachement', function(item)
-    if Config.Items[item] then
-        if equipedAttachments[item] then
-            UnEquipAttachment(item)
-        else
-            EquipAttachment(Config.Items[item])
-        end
-    else
-        notify("Neplatný attachment: " .. item)
-    end
-end)
+-- Funkce pro nasazení attachmentu na lokálního hráče
+function EquipAttachment(Tool)
+    local ped = PlayerPedId()
 
--- Příkaz /attach
-RegisterCommand(Config.AttachCommand, function(source, args, rawCommand)
-    if #args < 1 then
-        notify("Použití: /attach [item]")
+    -- Kontrola, zda je již attachment nasazen
+    if equipedAttachments[Tool.item] then
+        notify("Již máte tento attachment nasazen.")
         return
     end
 
-    local item = args[1]
+    -- Kontrola, zda má hráč potřebné povolení
+    local playerJob = LocalPlayer.state.Character.Job
+    local playerJobLabel = string.gsub(LocalPlayer.state.Character.JobLabel, " ", "")
+    local playerGrade = LocalPlayer.state.Character.Grade
 
-    -- if Config.Items[item] then
-    --     if equipedAttachments[item] then
-    --         UnEquipAttachment(item)
-    --     else
-    --         EquipAttachment(Config.Items[item])
-    --     end
-    -- else
-    --     notify("Neplatný attachment: " .. item)
-    -- end
-    TriggerEvent('aprts_attachments:client:toggelAttachement', item)
-end, false)
+    if Tool.job and playerJob ~= Tool.job then
+        notify("Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel)
+        return
+    end
+    if Tool.grade and playerGrade < Tool.grade then
+        notify("Tento attachment může používat pouze hráči s minimální hodností " .. Tool.grade)
+        return
+    end
+    if Tool.jobLabel and tostring(playerJobLabel) ~= tostring(Tool.jobLabel) then
+        print("."..playerJobLabel.."." .. " " .. "."..Tool.jobLabel..".")
+        notify("Tento attachment může používat pouze hráči s pracovní pozicí " .. Tool.jobLabel .. " a máš " .. playerJobLabel)
+        return
+    end
+
+    -- Kontrola a sundání stávajícího attachmentu ve stejné kategorii
+    for equippedItem, obj in pairs(equipedAttachments) do
+        local equippedCategory = Config.Items[equippedItem].category
+        if equippedCategory == Tool.category then
+            UnEquipAttachment(equippedItem)
+            break -- Předpokládáme, že v každé kategorii je pouze jeden attachment
+        end
+    end
+
+    -- Načtení modelu attachmentu
+    local modelHash = GetHashKey(Tool.model)
+    if not HasModelLoaded(modelHash) then
+        RequestModel(modelHash)
+        while not HasModelLoaded(modelHash) do
+            Wait(0)
+        end
+    end
+
+    -- Vytvoření objektu attachmentu
+    local x, y, z = table.unpack(GetEntityCoords(ped, true))
+    local obj = CreateObjectNoOffset(modelHash, x, y, z + 0.2, false, false, false)
+
+    -- Připojení objektu k modelu hráče
+    local boneIndex = GetEntityBoneIndexByName(ped, Tool.bone)
+    AttachEntityToEntity(obj, ped, boneIndex, Tool.coords.x, Tool.coords.y, Tool.coords.z, 
+        Tool.coords.xr, Tool.coords.yr, Tool.coords.zr, true, true, false, true, 1, true)
+
+    -- Uložení attachmentu do tabulky
+    equipedAttachments[Tool.item] = obj
+
+    -- Oznámení hráči
+    notify("Nasadil jste si " .. Tool.item)
+
+    -- Odeslání informací na server pro synchronizaci
+    TriggerServerEvent('aprts_attachments:server:Equip', Tool.item, Tool)
+end
 
 -- Registrace klientských událostí pro nasazení a sundání attachmentů ostatních hráčů
 RegisterNetEvent('aprts_attachments:client:Equip')
@@ -171,6 +144,30 @@ AddEventHandler('aprts_attachments:client:UnEquip', function(playerId, item)
     end
 end)
 
+RegisterNetEvent('aprts_attachments:client:toggelAttachement')
+AddEventHandler('aprts_attachments:client:toggelAttachement', function(item)
+    if Config.Items[item] then
+        if equipedAttachments[item] then
+            UnEquipAttachment(item)
+        else
+            EquipAttachment(Config.Items[item])
+        end
+    else
+        notify("Neplatný attachment: " .. item)
+    end
+end)
+
+-- Příkaz /attach
+RegisterCommand(Config.AttachCommand, function(source, args, rawCommand)
+    if #args < 1 then
+        notify("Použití: /attach [item]")
+        return
+    end
+
+    local item = args[1]
+    TriggerEvent('aprts_attachments:client:toggelAttachement', item)
+end, false)
+
 -- Synchronizace aktuálního stavu při připojení
 RegisterNetEvent('aprts_attachments:client:Sync')
 AddEventHandler('aprts_attachments:client:Sync', function(attachments)
@@ -180,6 +177,14 @@ AddEventHandler('aprts_attachments:client:Sync', function(attachments)
                 TriggerEvent('aprts_attachments:client:Equip', playerId, attachment)
             end
         end
+    end
+end)
+
+-- Synchronizace konkrétních attachmentů při požadavku
+RegisterNetEvent('aprts_attachments:client:SyncPlayerAttachments')
+AddEventHandler('aprts_attachments:client:SyncPlayerAttachments', function(playerId, attachments)
+    for _, attachment in pairs(attachments) do
+        TriggerEvent('aprts_attachments:client:Equip', playerId, attachment)
     end
 end)
 
@@ -216,32 +221,19 @@ Citizen.CreateThread(function()
     end
 end)
 
--- Registrace klientské události pro synchronizaci jednotlivých hráčů
-RegisterNetEvent('aprts_attachments:client:SyncPlayerAttachments')
-AddEventHandler('aprts_attachments:client:SyncPlayerAttachments', function(playerId, attachments)
-    for _, attachment in pairs(attachments) do
-        TriggerEvent('aprts_attachments:client:Equip', playerId, attachment)
-    end
-end)
-
-
-
-
-
-
-
-
+-- Čištění attachmentů při zastavení skriptu
 AddEventHandler('onResourceStop', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then
         return
     end
 
-    local _source = source
+    print("[aprts_attachments] Resource is stopping. Removing all attachments.")
 
-    if playerAttachments[_source] then
-        for _, attachment in ipairs(playerAttachments[_source]) do
-            DeleteObject(attachment.obj)
+    for playerId, attachments in pairs(playerAttachments) do
+        for _, attachment in ipairs(attachments) do
+            TriggerClientEvent('aprts_attachments:client:UnEquip', -1, playerId, attachment.item)
         end
-        playerAttachments[_source] = nil
     end
+
+    playerAttachments = {} -- Vyčištění tabulky
 end)

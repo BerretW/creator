@@ -3,7 +3,6 @@ for _, item in pairs(Config.Items) do
     exports.vorp_inventory:registerUsableItem(item.item, function(data)
         TriggerClientEvent("aprts_attachments:client:toggelAttachement", data.source, item.item)
         exports.vorp_inventory:closeInventory(data.source)
-
     end)
 end
 
@@ -19,8 +18,17 @@ AddEventHandler('aprts_attachments:server:Equip', function(item, attachment)
         playerAttachments[_source] = {}
     end
 
-    -- Přidání attachmentu do tabulky
-    table.insert(playerAttachments[_source], attachment)
+    -- Přidání attachmentu do tabulky, pokud ještě není přítomen
+    local exists = false
+    for _, att in ipairs(playerAttachments[_source]) do
+        if att.item == item then
+            exists = true
+            break
+        end
+    end
+    if not exists then
+        table.insert(playerAttachments[_source], attachment)
+    end
 
     -- Odeslání informací ostatním hráčům
     TriggerClientEvent('aprts_attachments:client:Equip', -1, _source, attachment)
@@ -56,11 +64,9 @@ RegisterServerEvent('aprts_attachments:server:RequestPlayerAttachments')
 AddEventHandler('aprts_attachments:server:RequestPlayerAttachments', function(playerId)
     local _source = source
     if playerAttachments[playerId] then
-        TriggerClientEvent('aprts_attachments:client:SyncPlayerAttachments', _source, playerId,
-            playerAttachments[playerId])
+        TriggerClientEvent('aprts_attachments:client:SyncPlayerAttachments', _source, playerId, playerAttachments[playerId])
     end
 end)
-
 
 -- Čištění dat při odpojení hráče
 AddEventHandler('playerDropped', function(reason)
