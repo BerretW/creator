@@ -1,0 +1,976 @@
+-- Horses = {
+--     {
+--         breed = "American Paint",
+--         horse_id = "a_c_horse_americanpaint_greyovero",
+--         color = "Grey Overo",
+--         cashPrice = 425,
+--         invLimit = 20,
+--         job = "Breeder1",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Paint",
+--         horse_id = "a_c_horse_americanpaint_splashedwhite",
+--         color = "Splashed White",
+--         cashPrice = 140,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {1}
+--     },
+--     {
+--         breed = "American Paint",
+--         horse_id = "a_c_horse_americanpaint_tobiano",
+--         color = "Tobiano",
+--         cashPrice = 140,
+--         invLimit = 20,
+--         job = "Breeder1",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Paint",
+--         horse_id = "a_c_horse_americanpaint_overo",
+--         color = "Overo",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder1",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Standardbred",
+--         horse_id = "a_c_horse_americanstandardbred_silvertailbuckskin",
+--         color = "Silver Tail Buckskin",
+--         cashPrice = 400,
+--         invLimit = 20,
+--         job = "Breeder2",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Standardbred",
+--         horse_id = "a_c_horse_americanstandardbred_palominodapple",
+--         color = "Palomino Dapple",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {1,2}
+--     },
+--     {
+--         breed = "American Standardbred",
+--         horse_id = "a_c_horse_americanstandardbred_black",
+--         color = "Black",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder2",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Standardbred",
+--         horse_id = "a_c_horse_americanstandardbred_buckskin",
+--         color = "Buckskin",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder2",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "American Standardbred",
+--         horse_id = "a_c_horse_americanstandardbred_lightbuckskin",
+--         color = "Light Buckskin",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder2",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Andalusian",
+--         horse_id = "a_c_horse_andalusian_perlino",
+--         color = "Perlino",
+--         cashPrice = 450,
+--         invLimit = 20,
+--         job = "Breeder3",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Andalusian",
+--         horse_id = "a_c_horse_andalusian_rosegray",
+--         color = "Rose Gray",
+--         cashPrice = 440,
+--         invLimit = 20,
+--         job = "Breeder3",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Andalusian",
+--         horse_id = "a_c_horse_andalusian_darkbay",
+--         color = "Dark Bay",
+--         cashPrice = 140,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {2}
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_blacksnowflake",
+--         color = "Snow Flake",
+--         cashPrice = 900,
+--         invLimit = 20,
+--         job = "Breeder4",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_brownleopard",
+--         color = "Brown Leopard",
+--         cashPrice = 450,
+--         invLimit = 20,
+--         job = "Breeder4",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_leopard",
+--         color = "Leopard",
+--         cashPrice = 430,
+--         invLimit = 20,
+--         job = "Breeder4",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_fewspotted_pc",
+--         color = "Few Spotted",
+--         cashPrice = 140,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_blanket",
+--         color = "Blanket",
+--         cashPrice = 200,
+--         invLimit = 20,
+--         job = "Breeder4",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Appaloosa",
+--         horse_id = "a_c_horse_appaloosa_leopardblanket",
+--         color = "Leopard Blanket",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder4",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_white",
+--         color = "White",
+--         cashPrice = 1500,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_rosegreybay",
+--         color = "Rose Grey Bay",
+--         cashPrice = 1350,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_black",
+--         color = "Black",
+--         cashPrice = 1250,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_grey",
+--         color = "Grey",
+--         cashPrice = 1150,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_warpedbrindle_pc",
+--         color = "Warped Brindle",
+--         cashPrice = 650,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_redchestnut",
+--         color = "Red Chestnut",
+--         cashPrice = 350,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Arabian",
+--         horse_id = "a_c_horse_arabian_redchestnut_pc",
+--         color = "Red Chestnut II",
+--         cashPrice = 350,
+--         invLimit = 20,
+--         job = "Breeder5",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Ardennes",
+--         horse_id = "a_c_horse_ardennes_irongreyroan",
+--         color = "Iron Grey Roan",
+--         cashPrice = 1200,
+--         invLimit = 20,
+--         job = "Breeder6",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Ardennes",
+--         horse_id = "a_c_horse_ardennes_strawberryroan",
+--         color = "Strawberry Roan",
+--         cashPrice = 450,
+--         invLimit = 20,
+--         job = "Breeder6",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Ardennes",
+--         horse_id = "a_c_horse_ardennes_bayroan",
+--         color = "Bay Roan",
+--         cashPrice = 140,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Belgian Draft",
+--         horse_id = "a_c_horse_belgian_blondchestnut",
+--         color = "Blond Chestnut",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Belgian Draft",
+--         horse_id = "a_c_horse_belgian_mealychestnut",
+--         color = "Mealy Chestnut",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder7",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_grullodun",
+--         color = "Grullo Dun",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder8",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_mealydapplebay",
+--         color = "Meally Dapple",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder8",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_redroan",
+--         color = "Red Roan",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder8",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_sealbrown",
+--         color = "Seal Brown",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_sorrel",
+--         color = "Sorrel",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder8",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Breton",
+--         horse_id = "a_c_horse_breton_steelgrey",
+--         color = "Steel Grey",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder8",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_baybrindle",
+--         color = "Bay Brindle",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_bayframeovero",
+--         color = "Bay Frame Overo",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder9",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_blueroanovero",
+--         color = "Blue Roan Overo",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder9",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_dun",
+--         color = "Dun",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder9",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_marblesabino",
+--         color = "Marble Sabino",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder9",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Criollo",
+--         horse_id = "a_c_horse_criollo_sorrelovero",
+--         color = "Sorrel Overo",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder9",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Dutch Warmblood",
+--         horse_id = "a_c_horse_dutchwarmblood_chocolateroan",
+--         color = "Chocolate Roan",
+--         cashPrice = 450,
+--         invLimit = 20,
+--         job = "Breeder10",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Dutch Warmblood",
+--         horse_id = "a_c_horse_dutchwarmblood_sealbrown",
+--         color = "Seal Brown",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder10",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Dutch Warmblood",
+--         horse_id = "a_c_horse_dutchwarmblood_sootybuckskin",
+--         color = "Sooty Buckskin",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder10",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Dutch Warmblood",
+--         horse_id = "a_c_horse_buell_warvets",
+--         color = "Cremello Gold",
+--         cashPrice = 600,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_palominoblagdon",
+--         color = "Palomino Blagdon",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder11",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_piebald",
+--         color = "Piebald",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder11",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_skewbald",
+--         color = "Skewbald",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder11",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_splashedbay",
+--         color = "Splashed Bay",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder11",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_splashedpiebald",
+--         color = "Splashed Piebald",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Gypsy Cob",
+--         horse_id = "a_c_horse_gypsycob_whiteblagdon",
+--         color = "White Blagdon",
+--         cashPrice = 150,
+--         invLimit = 25,
+--         job = "Breeder11",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Hungarian Halfbred",
+--         horse_id = "a_c_horse_hungarianhalfbred_darkdapplegrey",
+--         color = "Dapple Dark Grey",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder12",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Hungarian Halfbred",
+--         horse_id = "a_c_horse_hungarianhalfbred_liverchestnut",
+--         color = "Liver Chestnut",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder12",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Hungarian Halfbred",
+--         horse_id = "a_c_horse_hungarianhalfbred_flaxenchestnut",
+--         color = "Flaxen Chestnut",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder12",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Hungarian Halfbred",
+--         horse_id = "a_c_horse_hungarianhalfbred_piebaldtobiano",
+--         color = "Piebald Tobiano",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Kentucky Saddler",
+--         horse_id = "a_c_horse_kentuckysaddle_buttermilkbuckskin_pc",
+--         color = "Buttermilk Buckskin",
+--         cashPrice = 240,
+--         invLimit = 20,
+--         job = "Breeder13",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kentucky Saddler",
+--         horse_id = "a_c_horse_kentuckysaddle_black",
+--         color = "Black",
+--         cashPrice = 50,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Kentucky Saddler",
+--         horse_id = "a_c_horse_kentuckysaddle_chestnutpinto",
+--         color = "Chestnut Pinto",
+--         cashPrice = 50,
+--         invLimit = 20,
+--         job = "Breeder13",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kentucky Saddler",
+--         horse_id = "a_c_horse_kentuckysaddle_grey",
+--         color = "Grey",
+--         cashPrice = 50,
+--         invLimit = 20,
+--         job = "Breeder13",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kentucky Saddler",
+--         horse_id = "a_c_horse_kentuckysaddle_silverbay",
+--         color = "Silver Bay",
+--         cashPrice = 50,
+--         invLimit = 20,
+--         job = "Breeder13",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_black",
+--         color = "Black",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder14",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_cremello",
+--         color = "Cremello",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder14",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_dapplerosegrey",
+--         color = "Dapple Rose Grey",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder14",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_grey",
+--         color = "Grey",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder14",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_silver",
+--         color = "Silver",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder14",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Kladruber",
+--         horse_id = "a_c_horse_kladruber_white",
+--         color = "White",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_amberchampagne",
+--         color = "Amber Champagne",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_sablechampagne",
+--         color = "Sable Champagne",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_silverdapplepinto",
+--         color = "Silver Dapple Pinto",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_blacktovero",
+--         color = "Black Tovero",
+--         cashPrice = 1125,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_blueroan",
+--         color = "Blue Roan",
+--         cashPrice = 1125,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_buckskinbrindle",
+--         color = "Buckskin Brindle",
+--         cashPrice = 1125,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Missouri Fox Trotter",
+--         horse_id = "a_c_horse_missourifoxtrotter_dapplegrey",
+--         color = "Dapple Grey",
+--         cashPrice = 1125,
+--         invLimit = 20,
+--         job = "Breeder15",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Morgan",
+--         horse_id = "a_c_horse_morgan_palomino",
+--         color = "Palomino",
+--         cashPrice = 15,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Morgan",
+--         horse_id = "a_c_horse_morgan_bay",
+--         color = "Bay",
+--         cashPrice = 55,
+--         invLimit = 20,
+--         job = "Breeder16",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Morgan",
+--         horse_id = "a_c_horse_morgan_bayroan",
+--         color = "Bay Roan",
+--         cashPrice = 55,
+--         invLimit = 20,
+--         job = "Breeder16",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Morgan",
+--         horse_id = "a_c_horse_morgan_flaxenchestnut",
+--         color = "Flaxen Chestnut",
+--         cashPrice = 55,
+--         invLimit = 20,
+--         job = "Breeder16",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Morgan",
+--         horse_id = "a_c_horse_morgan_liverchestnut_pc",
+--         color = "Liver Chestnut",
+--         cashPrice = 55,
+--         invLimit = 20,
+--         job = "Breeder16",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_goldendun",
+--         color = "Golden Dun",
+--         cashPrice = 500,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_tigerstripedbay",
+--         color = "Tiger Striped Bay",
+--         cashPrice = 350,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_grullodun",
+--         color = "Grullo Dun",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_wildbay",
+--         color = "Wild Bay",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_blackovero",
+--         color = "Black Overo",
+--         cashPrice = 500,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_buckskin",
+--         color = "Buckskin",
+--         cashPrice = 500,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_chestnuttovero",
+--         color = "Chestnut Tovero",
+--         cashPrice = 500,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Mustang",
+--         horse_id = "a_c_horse_mustang_reddunovero",
+--         color = "Red Dun Overo",
+--         cashPrice = 500,
+--         invLimit = 20,
+--         job = "Breeder17",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Nokota",
+--         horse_id = "a_c_horse_nokota_reversedappleroan",
+--         color = "Reverse Dapple Roan",
+--         cashPrice = 450,
+--         invLimit = 20,
+--         job = "Breeder18",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Nokota",
+--         horse_id = "a_c_horse_nokota_blueroan",
+--         color = "Blue Roan",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Nokota",
+--         horse_id = "a_c_horse_nokota_whiteroan",
+--         color = "White Roan",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder18",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_black",
+--         color = "Black",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "Breeder19",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_dappledbuckskin",
+--         color = "Dappled Buckskin",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder19",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_piebaldroan",
+--         color = "Piebald Roan",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder19",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_rosegrey",
+--         color = "Rose Grey",
+--         cashPrice = 550,
+--         invLimit = 20,
+--         job = "Breeder19",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_speckledgrey",
+--         color = "Speckled Grey",
+--         cashPrice = 150,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Norfolk Roadster",
+--         horse_id = "a_c_horse_norfolkroadster_spottedtricolor",
+--         color = "Spotted Tricolor",
+--         cashPrice = 950,
+--         invLimit = 20,
+--         job = "Breeder19",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Shire",
+--         horse_id = "a_c_horse_shire_lightgrey",
+--         color = "Light Grey",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder20",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Shire",
+--         horse_id = "a_c_horse_shire_ravenblack",
+--         color = "Raven Black",
+--         cashPrice = 130,
+--         invLimit = 20,
+--         job = "Breeder20",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Shire",
+--         horse_id = "a_c_horse_shire_darkbay",
+--         color = "Dark Bay",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Suffolk Punch",
+--         horse_id = "a_c_horse_suffolkpunch_redchestnut",
+--         color = "Red Chestnut",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "",
+--         NPCid = {}
+--     },
+--     {
+--         breed = "Suffolk Punch",
+--         horse_id = "a_c_horse_suffolkpunch_sorrel",
+--         color = "Sorrel",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     }
+--     ,
+--     {
+--         breed = "Turkoman Black",
+--         horse_id = "a_c_horse_turkoman_black",
+--         color = "Black",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Turkoman Chestnut",
+--         horse_id = "a_c_horse_turkoman_chestnut",
+--         color = "Chestnut",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Turkoman DarkBay",
+--         horse_id = "a_c_horse_turkoman_darkbay",
+--         color = "DarkBay",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Turkoman Gold",
+--         horse_id = "a_c_horse_turkoman_gold",
+--         color = "Gold",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Turkoman Grey",
+--         horse_id = "a_c_horse_turkoman_grey",
+--         color = "Grey",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     },
+--     {
+--         breed = "Turkoman Perlino",
+--         horse_id = "a_c_horse_turkoman_perlino",
+--         color = "Perlino",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     }
+--     ,
+--     {
+--         breed = "Turkoman Silver",
+--         horse_id = "a_c_horse_turkoman_silver",
+--         color = "Silver",
+--         cashPrice = 120,
+--         invLimit = 20,
+--         job = "Breeder21",
+--         NPCid = { 1,3 }
+--     }
+-- }

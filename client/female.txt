@@ -1,0 +1,78 @@
+
+// Spurs - 0x18729F39
+
+// Pants - 0x1D4C528A
+
+// Shirts - 0x2026C46D
+
+// Chaps - 0x3107499B
+
+// Faces - 0x378AD10C
+
+// Ponchos - 0x3C1A74CD
+
+// Badges - 0x3F7F3587
+
+// Vests - 0x485EE834
+
+// Leg Armor - 0x514ADCEA
+
+// Glasses - 0x05E47CA6
+
+// Bandanas - 0x5FC29285
+
+// Coats - 0x0662AC34
+
+// Body Armor - 0x72E6EF74
+
+// Masks - 0x7505EF42
+
+// Boots - 0x777EC6EF
+
+// Buckles - 0x79D7DF96
+
+// Rings - 0x7A6BBD0B
+
+// Neckwear - 0x7A96FACA
+
+// Wristbands - 0x7BC10759
+
+// Feet Style - 0x823687F5
+
+// Belts - 0x83887E88
+
+// Hats - 0x864B03AE
+
+// Suspenders - 0x877A2CF7
+
+// Arm Armor - 0x91CE9B20
+
+// Bags - 0x94504D26
+
+// Unk1 - 0x96EDAE5C
+
+// Hats 2 - 0x9925C067
+
+// Gun Belts - 0x9B2C8B89
+
+// Skirts - 0xA0E3AB7F
+
+// Belts 2 - 0xA6D134C6
+
+// Ponchos 2 - 0xAF14310B
+
+// Body Style - 0x0B3966C9
+
+// Off-Hand Holsters - 0xB6B6122D
+
+// Coats 2 - 0xE06D30CE
+
+// Unk2 - 0xEA24B45E
+
+// Gloves - 0xEABE0032
+
+// Gun Belt Accessory - 0xF1542D11
+
+// Rings 2 - 0xF16A1D23
+
+// Buckles 2 - 0xFAE9107F

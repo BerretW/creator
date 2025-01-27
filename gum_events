@@ -1,0 +1,32 @@
+--List of registred client Events:
+
+AddEventHandler('gum_notify:notify', function(title, subtext, icon, duration))
+AddEventHandler('gumApi:createStash', function(id, size))
+AddEventHandler('gumApi:openStash', function(id,size))
+AddEventHandler('gum_inventory:cleaning_weapons', function())
+AddEventHandler('gum_inventory:CloseInv', function())
+
+
+--List of registred server Events:
+AddEventHandler('gum_admin:addItem', function(item, count))
+AddEventHandler('gum_admin:giveMoney', function(id, count))
+RegisterServerEvent('gumCore:addItem', function(source, name, count, metaDataData, playerBackup, corruption))
+RegisterServerEvent('gumCore:subItem', function(source, name, count))
+RegisterServerEvent('gumCore:subItemByID', function(source, itemId, count))
+
+
+    local _source = source
+    local charIdentifier
+    local identifier
+    local firstname
+    local lastname
+    local jobs
+    api.getInformation(_source, function(player)
+        if player then
+             charIdentifier = player.getCharIdentifier()
+             identifier = player.getSteamIdentifier()
+             firstname = player.getFirstname()
+             lastname = player.getLastname()
+             jobs = player.getJob()
+        end
+    end)
