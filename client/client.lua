@@ -1,432 +1,349 @@
-myHorses = {}
-local displayHorses = {}
-local horseOnDisplay = nil
-local isSpawning = false -- Přidáno pro kontrolu, zda již probíhá spawn
+local PromptM = nil
+local PromptF = nil
+local PromptOK = nil
+local promptGroup = GetRandomIntInRange(0, 0xffffff)
 
+local Prompt = nil
+local promptGroup2 = GetRandomIntInRange(0, 0xffffff)
 
-
+playingAnimation = false
 function debugPrint(msg)
-    if Config.Debug then
-        print(msg)
+    if Config.Debug == true then
+        print("^1[SCRIPT]^0 " .. msg)
     end
 end
 
--- Get horse with id 
-local function getHorse(id)
-    for _, horse in ipairs(myHorses) do
-        if horse.id == id then
-            return horse
-        end
-    end
-    return nil
+function notify(text)
+    TriggerEvent('notifications:notify', "SCRIPT", text, 3000)
 end
 
--- Get NPC by name
-local function getNPC(name)
-    for _, npc in ipairs(NPCs) do
-        if npc.name == name then
-            return npc
-        end
+function table.count(tbl)
+    local count = 0
+    for _ in pairs(tbl) do
+        count = count + 1
     end
-    return nil
+    return count
 end
 
--- View Horses While in Menu
-local function CreateCamera(npc)
-    local horseCam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
-    SetCamCoord(horseCam, npc.camCoords.x, npc.camCoords.y, npc.camCoords.z + 1.2)
-    SetCamActive(horseCam, true)
-    PointCamAtCoord(horseCam, npc.displayCoords.x - 0.5, npc.displayCoords.y, npc.displayCoords.z)
-    DoScreenFadeOut(500)
-    Citizen.Wait(500)
-    DoScreenFadeIn(500)
-    RenderScriptCams(true, false, 0, 0, 0)
-    Citizen.InvokeNative(0x67C540AA08E4A6F5, 'Leaderboard_Show', 'MP_Leaderboard_Sounds', true, 0) -- PlaySoundFrontend
-    return horseCam
-end
-
-function LoadModel(model)
-    local modelHash = GetHashKey(model)
-    if not IsModelValid(modelHash) then
-        return dprint('Invalid model:', model)
-    end
-    RequestModel(modelHash)
-    while not HasModelLoaded(modelHash) do
-        Citizen.Wait(10)
-    end
-    return modelHash
-end
-
-local function LoadModelHash(hash)
-    if not IsModelValid(hash) then
-        return dprint('Invalid model:', hash)
-    end
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do
+local function LoadModel(model)
+    local model = GetHashKey(model)
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        RequestModel(model)
         Citizen.Wait(10)
     end
 end
 
-local function getHorseName(horse)
-    local model = tonumber(GetEntityModel(horse))
-    for _, Horse in ipairs(Horses) do
-        if GetHashKey(Horse.horse_id) == model then
-            return Horse.breed .. " " .. Horse.color, Horse.cashPrice
+local function spawnNPC(model, x, y, z)
+    local modelHash = LoadModel(model)
+    local npc_ped = CreatePed(model, x, y, z, false, false, false, false)
+    PlaceEntityOnGroundProperly(npc_ped)
+    Citizen.InvokeNative(0x283978A15512B2FE, npc_ped, true)
+    print('npc_ped: ' .. npc_ped)
+    SetEntityHeading(npc_ped, 0.0)
+    SetEntityCanBeDamaged(npc_ped, false)
+    SetEntityInvincible(npc_ped, true)
+    FreezeEntityPosition(npc_ped, true)
+    SetBlockingOfNonTemporaryEvents(npc_ped, true)
+    SetEntityCompletelyDisableCollision(npc_ped, false, false)
+
+    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 6)
+    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 0)
+    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 1)
+    Citizen.InvokeNative(0xC163DAC52AC975D3, npc_ped, 2)
+
+    SetModelAsNoLongerNeeded(modelHash)
+    return npc_ped
+end
+
+-- jobtable = {
+--     "woodworker","blacksmith","carpenter"
+-- }
+function hasJob(jobtable)
+    local job = LocalPlayer.state.Character.Job
+    for _, v in pairs(jobtable) do
+        if job == v then
+            return true
         end
     end
+    return false
 end
+-- SetResourceKvp("aprts_vzor:deht", 0)
+-- local deht = GetResourceKvpString("aprts_vzor:deht")
 
-local function getHorsePrice(horse)
-    for _, Horse in pairs(Horses) do
-        if GetHashKey(Horse.horse_id) == tonumber(horse.vehicles) then
-            return Horse.cashPrice
-        end
-    end
-    return 0
+local function prompt()
+    Citizen.CreateThread(function()
+        local str = "Budu ženou"
+        local wait = 0
+        PromptF = Citizen.InvokeNative(0x04F97DE45A519419)
+        PromptSetControlAction(PromptF, Config.KeyF)
+        str = CreateVarString(10, 'LITERAL_STRING', str)
+        PromptSetText(PromptF, str)
+        PromptSetEnabled(PromptF, true)
+        PromptSetVisible(PromptF, true)
+        PromptSetHoldMode(PromptF, true)
+        PromptSetGroup(PromptF, promptGroup)
+        PromptRegisterEnd(PromptF)
+
+        local str = "Budu mužem"
+        local wait = 0
+        PromptM = Citizen.InvokeNative(0x04F97DE45A519419)
+        PromptSetControlAction(PromptM, Config.KeyM)
+        str = CreateVarString(10, 'LITERAL_STRING', str)
+        PromptSetText(PromptM, str)
+        PromptSetEnabled(PromptM, true)
+        PromptSetVisible(PromptM, true)
+        PromptSetHoldMode(PromptM, true)
+        PromptSetGroup(PromptM, promptGroup)
+        PromptRegisterEnd(PromptM)
+
+        local str = "Potvrdit"
+        local wait = 0
+        PromptOK = Citizen.InvokeNative(0x04F97DE45A519419)
+        PromptSetControlAction(PromptOK, Config.KeyOK)
+        str = CreateVarString(10, 'LITERAL_STRING', str)
+        PromptSetText(PromptOK, str)
+        PromptSetEnabled(PromptOK, false)
+        PromptSetVisible(PromptOK, true)
+        PromptSetHoldMode(PromptOK, true)
+        PromptSetGroup(PromptOK, promptGroup)
+        PromptRegisterEnd(PromptOK)
+
+        local str = "Vstoupit do IC"
+        local wait = 0
+        Prompt = Citizen.InvokeNative(0x04F97DE45A519419)
+        PromptSetControlAction(Prompt, 0xC7B5340A)
+        str = CreateVarString(10, 'LITERAL_STRING', str)
+        PromptSetText(Prompt, str)
+        PromptSetEnabled(Prompt, true)
+        PromptSetVisible(Prompt, true)
+        PromptSetHoldMode(Prompt, true)
+        PromptSetGroup(Prompt, promptGroup2)
+        PromptRegisterEnd(Prompt)
+    end)
 end
-
-function getHorseBreed(horse)
-    local name = GetDiscoverableNameHashAndTypeForEntity(horse)
-    local breed = GetStringFromHashKey()
-    local model = GetEntityModel(horse)
-    local coat = GetHorseCoatFromModel(tonumber(model))
-    dprint("Name: ", GetStringFromHashKey(name))
-    dprint("model: ", coat)
-    return GetStringFromHashKey(name)
-end
-
-local function getModelString(horse)
-    local model = horse.vehicles
-    local modelString = GetStringFromHashKey(tonumber(model))
-    dprint(modelString)
-    return modelString
-end
-
--- Spawn frozen horse for display
-local function spawnHorse(horse, pos, h)
-    if isSpawning then
-        dprint("Already spawning a horse. Please wait.")
-        return
-    end
-    isSpawning = true
-    dprint("Spawning Horse: ", horse.name, horse.vehicles)
-    local model = tonumber(horse.vehicles)
-    LoadModelHash(model)
-
-    local foundGround, groundZ
-    for height = 1, 1000 do
-        foundGround, groundZ = GetGroundZAndNormalFor_3dCoord(pos.x, pos.y, height + 0.0)
-        if foundGround then
-            dprint('FOUND GROUND!: ' .. groundZ)
+function playAnim(entity, dict, name, flag, time)
+    playingAnimation = true
+    RequestAnimDict(dict)
+    local waitSkip = 0
+    while not HasAnimDictLoaded(dict) do
+        waitSkip = waitSkip + 1
+        if waitSkip > 100 then
             break
         end
+        Citizen.Wait(0)
     end
-
-    local newHorse = CreatePed(model, pos.x, pos.y, groundZ, h, 1, 0)
-    SetEntityInvincible(newHorse, true)
-    SetBlockingOfNonTemporaryEvents(newHorse, true)
-    while not DoesEntityExist(newHorse) do
-        Citizen.Wait(100)
-    end
-    SetRandomOutfitVariation(newHorse, true)
-    print("Horse spawned: ", newHorse .. json.encode(horse.meta))
-    applyMetaTag(newHorse, horse.meta)
-    FreezeEntityPosition(newHorse, true)
-    isSpawning = false
-    return newHorse
+    TaskPlayAnim(entity, dict, name, 1.0, 1.0, time, flag, 0, true, 0, false, 0, false)
+    Wait(time)
+    playingAnimation = false
 end
 
--- Funkce pro vyčištění koní
-local function CleanupHorses()
-    for _, horse in ipairs(displayHorses) do
-        if DoesEntityExist(horse) then
-            DeleteEntity(horse)
+function equipProp(model, bone, coords)
+    local ped = PlayerPedId()
+    local playerPos = GetEntityCoords(ped)
+    local mainProp = CreateObject(model, playerPos.x, playerPos.y, playerPos.z + 0.2, true, true, true)
+    local boneIndex = GetEntityBoneIndexByName(ped, bone)
+    AttachEntityToEntity(mainProp, ped, boneIndex, coords.x, coords.y, coords.z, coords.xr, coords.yr, coords.zr, true,
+        true, false, true, 1, true)
+    return mainProp
+end
+
+function loadBody(gender)
+    SkinColorTracker = SkinColorTracker
+    local SkinColor = Config.DefaultChar[gender][SkinColorTracker]
+    local legs = tonumber("0x" .. SkinColor.Legs[LegsTypeTracker])
+    local bodyType = tonumber("0x" .. SkinColor.Body[BodyTypeTracker])
+    local heads = tonumber("0x" .. SkinColor.Heads[HeadIndexTracker])
+    local headtexture = joaat(SkinColor.HeadTexture[1])
+    local albedo = Config.texture_types[gender].albedo
+    IsPedReadyToRender()
+    ApplyShopItemToPed(heads)
+    ApplyShopItemToPed(bodyType)
+    ApplyShopItemToPed(legs)
+    Citizen.InvokeNative(0xC5E7204F322E49EB, albedo, headtexture, 0x7FC5B1E1)
+    UpdatePedVariation()
+end
+
+function GetName(Result)
+    local splitString = {}
+    for i in string.gmatch(Result, "%S+") do
+        splitString[#splitString + 1] = i
+    end
+
+    if #splitString < 2 then
+        return false
+    end
+
+    for _, word in ipairs(Config.BannedNames) do
+        if string.find(splitString[1], word) or string.find(splitString[2], word) then
+            return nil
         end
     end
-    displayHorses = {}
-    if horseOnDisplay and DoesEntityExist(horseOnDisplay) then
-        DeleteEntity(horseOnDisplay)
-        horseOnDisplay = nil
+    local lastname = splitString[1]
+    
+    if table.count(splitString) > 1 then
+        lastname = splitString[2]
     end
+    return splitString[1], lastname
 end
 
--- Funkce pro vyčištění při zastavení resource
-local function CleanupOnResourceStop()
-    if DoesEntityExist(horseOnDisplay) then
-        DeleteEntity(horseOnDisplay)
-    end
-    for _, horse in pairs(displayHorses) do
-        print("Deleting horse " .. horse)
-        if DoesEntityExist(horse) then
-            DeleteEntity(horse)
-        end
-    end
-    displayHorses = {}
-    DestroyAllCams(true)
-    jo.menu.show(false)
-    FreezeEntityPosition(PlayerPedId(), false)
-end
-local function CleanupHorsesAndCams()
-    CleanupHorses()
-    if horseOnDisplay then
-        DeleteEntity(horseOnDisplay)
-        horseOnDisplay = nil
-    end
-    DestroyAllCams(true)
-    FreezeEntityPosition(PlayerPedId(), false)
-end
+Citizen.CreateThread(function()
+    prompt()
+    while true do
+        local pause = 1000
+        local playerPed = PlayerPedId()
+        if InCharacterCreator == true then
+            pause = 0
+            PromptSetActiveGroupThisFrame(promptGroup, CreateVarString(10, 'LITERAL_STRING', "Pohlaví"))
+            if PromptHasHoldModeCompleted(PromptF) then
+                CreatePlayerModel("mp_female")
+                PromptSetEnabled(PromptOK, true)
+            end
+            if PromptHasHoldModeCompleted(PromptM) then
+                CreatePlayerModel("mp_male")
+                PromptSetEnabled(PromptOK, true)
+            end
+            if PromptHasHoldModeCompleted(PromptOK) then
+                CreateMenu()
+                -- FreezeEntityPosition(PlayerPedId(), false)
 
-
--- Funkce pro efekt přechodu kamery
-local function FadeCamera()
-    DoScreenFadeOut(200)
-    Citizen.Wait(200)
-    DoScreenFadeIn(200)
-end
-
--- Funkce pro nastavení koně jako defaultního
-local function SetDefaultHorse(kun)
-    print("Selected horse ", json.encode(kun))
-    jo.notif.rightSuccess('Horse ' .. kun.name .. ' was set to Default')
-    TriggerServerEvent("aprts_horses:Server:defHorse", kun.id)
-    fleeHorse(myHorse.ped)
-    jo.menu.show(false)
-    CleanupHorsesAndCams()
-end
-
--- Funkce pro potvrzení prodeje koně
-local function ConfirmSellHorse(kun)
-    dprint("Selected horse ", json.encode(kun))
-    local answer = exports.aprts_inputButtons:getAnswer("Opravdu chcete prodat tohoto koně?", {
-        { label = "Ano", value = 1, image = "check.png" },
-        { label = "Ne", value = 2, image = "cross.png" }
-    }, 10000, "black_paper.png")
-
-    if answer == 1 then
-        print(json.encode(kun))
-        TriggerServerEvent("aprts_horses:sellHorse", kun.id)
-        jo.menu.show(false)
-        CleanupHorsesAndCams()
-    end
-end
-
--- Funkce pro zobrazení koně při aktivaci položky menu
-local function HandleHorseDisplay(index, horse, camera, menuType)
-    if isSpawning then
-        dprint("Currently spawning a horse. Please wait.")
-        return
-    end
-
-    local posKey = "displayCoords" .. (index > 1 and tostring(index) or "")
-    local camKey = "camCoords" .. (index > 1 and tostring(index) or "")
-
-    if Config.multiStable and closestNPC[camKey] then
-        FadeCamera()
-        SetCamCoord(camera, closestNPC[camKey].x, closestNPC[camKey].y, closestNPC[camKey].z + 1.2)
-        PointCamAtCoord(camera, closestNPC[posKey].x - 0.5, closestNPC[posKey].y, closestNPC[posKey].z)
-    else
-        if horseOnDisplay then
-            DeleteEntity(horseOnDisplay)
-            horseOnDisplay = nil
-        end
-        FadeCamera()
-        horseOnDisplay = spawnHorse(horse, closestNPC.displayCoords, closestNPC.displayH)
-        SetCamCoord(camera, closestNPC.camCoords.x, closestNPC.camCoords.y, closestNPC.camCoords.z + 1.2)
-        PointCamAtCoord(camera, closestNPC.displayCoords.x - 0.5, closestNPC.displayCoords.y, closestNPC.displayCoords.z)
-    end
-end
-
-local function CreateMenu()
-    if not closestNPC then
-        print("No NPC found")
-        return
-    end
-
-    TriggerServerEvent("aprts_horses:getHorses")
-
-    -- Čekání na načtení koní s timeoutem
-    local waitTime = 0
-    while table.count(myHorses) < 1 do
-        waitTime = waitTime + 1
-        if waitTime > 100 then -- Přibližně 5 sekund
-            notify("Nemáte žádné koně")
-            return
-        end
-        Citizen.Wait(50) -- Krátká pauza před dalším zkontrolováním
-    end
-
-    FreezeEntityPosition(PlayerPedId(), true)
-    local camera = CreateCamera(closestNPC)
-
-    -- Odstranění existujících koní z display
-    CleanupHorses()
-
-    -- Spawn koní pokud je multiStable povolen
-    if Config.multiStable then
-        for i, kun in ipairs(myHorses) do
-            local posKey = "displayCoords" .. (i > 1 and tostring(i) or "")
-            if closestNPC[posKey] then
-                local pos = closestNPC[posKey]
-                table.insert(displayHorses, spawnHorse(kun, pos, closestNPC.displayH))
+                -- if Camera then
+                --     RenderScriptCams(false, false, 0, 1, 0)
+                --     DestroyCam(Camera, false)
+                --     Camera = nil
+                -- end
+                -- NetworkEndTutorialSession()
+                -- TriggerServerEvent("murphy_clothing:instanceplayers", 0)
+                InCharacterCreator = false
+                Playerdata.gender = GetGender()
+                playAnim(PlayerPedId(), "amb_generic@world_human_generic_standing@lf_fwd@male_a@base", "base", 1, -1)
+                jo.menu.setCurrentMenu(menuID)
+                jo.menu.show(true)
             end
         end
-    else
-        if #myHorses > 0 then
-            horseOnDisplay = spawnHorse(myHorses[1], closestNPC.displayCoords, closestNPC.displayH)
-        end
+        Citizen.Wait(pause)
     end
-    -- Funkce pro vyčištění koní a kamer
+end)
+-- 
+NPC = nil
+Citizen.CreateThread(function()
 
-    -- Inicializace menu
-    local menu = jo.menu.create('menu1', {
-        title = closestNPC.name,
-        subtitle = "Horse Management",
-        onEnter = function()
-            dprint('onEnter menu1')
-        end,
-        onBack = function()
-            dprint('onBack menu1')
-            jo.menu.show(false)
-            FreezeEntityPosition(PlayerPedId(), false)
-            CleanupHorsesAndCams()
-        end,
-        onExit = function()
-            dprint('onExit menu1')
-        end
-    })
+    while true do
+        local pause = 1000
 
-    -- Přidání položek do hlavního menu
-    menu:addItem({ title = "Moje Koně", child = "subMenu" })
-    menu:addItem({ title = "Prodej Koní", child = "sellMenu" })
-    menu:send()
-
-    -- Vytvoření podmenu "Moje Koně"
-    local subMenu = jo.menu.create('subMenu', {
-        title = "Moje Koně",
-        onEnter = function() dprint('enter subMenu') end,
-        onBack = function() dprint('pressed BACK subMenu') end,
-        onExit = function() dprint('exit subMenu') end
-    })
-
-    -- Vytvoření podmenu "Prodej Koní"
-    local sellMenu = jo.menu.create('sellMenu', {
-        title = "Prodej Koní",
-        onEnter = function() dprint('enter sellMenu') end,
-        onBack = function() dprint('pressed BACK sellMenu') end,
-        onExit = function() dprint('exit sellMenu') end
-    })
-
-
-
-    -- Přidání koní do podmenu "Moje Koně"
-    for i, kun in ipairs(myHorses) do
-        subMenu:addItem({
-            title = string.format("%s - %s", kun.name, kun.breed),
-            onActive = function()
-                HandleHorseDisplay(i, kun, camera, "subMenu")
-            end,
-            onClick = function()
-                SetDefaultHorse(kun)
-            end,
-            onExit = function()
-                DeleteEntity(horseOnDisplay)
-                dprint('onExit sub')
+        local playerPed = PlayerPedId()
+        local playerPos = GetEntityCoords(playerPed)
+        local distance = Vdist2(playerPos.x, playerPos.y, playerPos.z, Config.NPC.coords.x, Config.NPC.coords.y,
+            Config.NPC.coords.z)
+        if distance < 100.0 then
+            if not DoesEntityExist(NPC) then
+                NPC = spawnNPC(Config.NPC.model, Config.NPC.coords.x, Config.NPC.coords.y, Config.NPC.coords.z)
+                TaskStartScenarioInPlace(NPC, Config.NPC.sceneario, 0, true)
+                SetEntityHeading(NPC, Config.NPC.heading)
             end
-        })
-    end
-    subMenu:send()
-
-    -- Přidání koní do podmenu "Prodej Koní"
-    for i, kun in ipairs(myHorses) do
-        local price = math.floor(getHorsePrice(kun) / 10)
-        sellMenu:addItem({
-            title = string.format("%s - %s - %d$", kun.name, kun.breed, price),
-            onActive = function()
-                HandleHorseDisplay(i, kun, camera, "sellMenu")
-            end,
-            onClick = function()
-                ConfirmSellHorse(kun)
-            end,
-            onExit = function()
-                DeleteEntity(horseOnDisplay)
-                dprint('onExit sellMenu')
+        else
+            if DoesEntityExist(NPC) then
+                DeleteEntity(NPC)
+                NPC = 0
             end
-        })
-    end
-    sellMenu:send()
-
-    -- Nastavení aktuálního menu a jeho zobrazení
-    jo.menu.setCurrentMenu('menu1', false, true)
-    jo.menu.show(true)
-end
-
-AddEventHandler("onResourceStop", function(resourceName)
-    if (GetCurrentResourceName() ~= resourceName) then
-        return
-    end
-    CleanupOnResourceStop()
-end)
-
-AddEventHandler("onResourceStart", function(resourceName)
-    if (GetCurrentResourceName() ~= resourceName) then
-        return
-    end
-    TriggerServerEvent("aprts_horses:getHorses")
-end)
-
-RegisterNetEvent("aprts_horses:openMenu")
-AddEventHandler("aprts_horses:openMenu", function()
-    print("Opening Menu")
-    if jo.menu.isOpen() then
-        jo.menu.show(false)
-        FreezeEntityPosition(PlayerPedId(), false)
-        CleanupHorses()
-        DestroyAllCams(true)
-    else
-        CreateMenu()
-    end
-end)
-
-RegisterNetEvent("aprts_horses:sendHorses")
-AddEventHandler("aprts_horses:sendHorses", function(horses)
-    myHorses = horses
-    for _, horse in ipairs(myHorses) do
-        dprint(horse.name .. " - " .. horse.breed)
-    end
-end)
-
-function getClosestHorseID(range)
-    local closestHorse = nil
-    if range == nil then
-        range = 1
-    end
-    local horse = Citizen.InvokeNative(0x0501D52D24EA8934, range, Citizen.ResultAsInteger()) 
-    if (horse == 0) then
-        return nil
-    end
-    return Entity(horse).state.myHorseId
-end
-
---------------------- Call body pro koně --------------------------
-spawnPoints = {}
-RegisterNetEvent("aprts_roadpoints:Client:getPoints")
-AddEventHandler("aprts_roadpoints:Client:getPoints", function(serverPoints)
-    spawnPoints = serverPoints
-end)
-RegisterNetEvent("aprts_roadpoints:Client:addPoint")
-AddEventHandler("aprts_roadpoints:Client:addPoint", function(point)
-    spawnPoints[point.id] = point
-end)
-
-function getClosestPoint(coords)
-    local closestPoint = nil
-    local closestDistance = math.huge
-    for id, point in pairs(spawnPoints) do
-        local distance = GetDistanceBetweenCoords(coords, point.coords.x, point.coords.y, point.coords.z, false)
-        if distance < closestDistance then
-            closestDistance = distance
-            closestPoint = point
         end
+        if distance < 2.0 then
+            local name = CreateVarString(10, 'LITERAL_STRING', "OOC => IC")
+            PromptSetActiveGroupThisFrame(promptGroup2, name)
+
+            if PromptHasHoldModeCompleted(Prompt) then
+                SetEntityCoords(playerPed, Config.NPC.targetCoords.x, Config.NPC.targetCoords.y,
+                    Config.NPC.targetCoords.z)
+                NetworkEndTutorialSession()
+                TriggerServerEvent("murphy_clothing:instanceplayers", 0)
+                NetworkEndTutorialSession()
+                TriggerServerEvent('aprts_charCreator:Server:defaults')
+            end
+
+            pause = 0
+        end
+        Citizen.Wait(pause)
     end
-    return closestPoint
-end
+end)
+
+-- 
+Citizen.CreateThread(function()
+    while PlayerPedId() == 0 do
+        print(PlayerPedId())
+        Citizen.Wait(0)
+    end
+    local x, y, z = Config.Camera.lookAt.x, Config.Camera.lookAt.y, Config.Camera.lookAt.z + 1.0
+    local camx, camy, camz = Config.Camera.coords.x, Config.Camera.coords.y, Config.Camera.coords.z
+    local minZ = z - 1.5
+    local maxZ = z + 1.5
+    local minY = y - 1.5
+    local maxY = y + 1.5
+    local minmax = 1.5
+    print("Getting heading")
+    local heading = GetEntityHeading(PlayerPedId())
+    print("player heading" .. heading)
+    while true do
+        local pause = 1000
+
+        if Camera then
+            PointCamAtCoord(Camera, x, y, z)
+            DrawLightWithRange(camx, camy, camz, 255, 255, 255, 8.5, 10.0)
+            SetCamCoord(Camera, camx, camy, camz)
+            if IsDisabledControlPressed(0, Config.KeyUP) then
+                camz = camz + 0.01
+                if camz > camz + minmax then
+                    camz = camz + minmax
+                end
+                z = z + 0.01
+                if z > maxZ then
+                    z = maxZ
+                end
+
+            end
+            if IsDisabledControlPressed(0, Config.KeyDOWN) then
+                camz = camz - 0.01
+                if camz < camz - minmax then
+                    camz = camz - minmax
+                end
+                z = z - 0.01
+                if z < minZ then
+                    z = minZ
+                end
+            end
+            if IsDisabledControlPressed(0, 0xB4E465B4) then
+                -- SetCamFov(Camera, GetCamFov(Camera) - 1.0)0xB4E465B4
+                y = y - 0.01
+                if y < minY then
+                    y = minY
+                end
+            end
+            if IsDisabledControlPressed(0, 0x7065027D) then
+                -- SetCamFov(Camera, GetCamFov(Camera) + 1.0)
+                y = y + 0.01
+                if y > maxY then
+                    y = maxY
+                end
+            end
+            if IsDisabledControlPressed(0, 0x8FFC75D6) then
+                SetCamFov(Camera, GetCamFov(Camera) - 1.0)
+
+            end
+            if IsDisabledControlPressed(0, 0x8AAA0AD4) then
+                SetCamFov(Camera, GetCamFov(Camera) + 1.0)
+
+            end
+            if IsDisabledControlPressed(0, 0xB2F377E8) and IsInputDisabled(0) then -- 1  slot
+                heading = heading + 1.0
+                SetEntityHeading(PlayerPedId(), heading)
+            end
+            if IsDisabledControlPressed(0, 0x760A9C6F) and IsInputDisabled(0) then -- 1  slot
+                heading = heading - 1.0
+                SetEntityHeading(PlayerPedId(), heading)
+            end
+            pause = 0
+        end
+
+        Citizen.Wait(pause)
+
+    end
+end)

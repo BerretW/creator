@@ -1,14 +1,19 @@
-fx_version 'adamant'
-rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
+fx_version "adamant"
 lua54 'yes'
-games {'rdr3', 'gta5'}
+rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-client_scripts {"@uiprompt/uiprompt.lua",'locale.lua', 'client/dataview.lua', 'client/cl_main.lua', 'client/client.lua', 'client/designer.lua','client/bags.lua',
-                'config.lua', 'client/horseinfo.lua', 'client/call.lua', 'client/flee.lua', 'client/commands.lua',
-                'client/npc.lua', 'client/shop.lua','client/menu.lua', 'client/prompt.lua','client/horsePromprs.lua','client/attributes.lua','keys.lua'}
+author 'SpoiledMouse'
+version '1.0'
+description 'aprts_charCreator'
 
-server_scripts {'locale.lua', 'server/sv_main.lua', 'config.lua','server/attributes.lua', '@mysql-async/lib/MySQL.lua','server/items.lua', 'comp.lua'}
+games {"rdr3"}
 
-shared_scripts {'@jo_libs/init.lua', 'horses.lua', 'comp.lua'}
-ui_page {"nui://jo_libs/nui/menu/index.html"}
-jo_libs {'menu', 'notification'}
+client_scripts {'config.lua', 'client/creator.lua', 'client/menu.lua','client/skill_menu.lua', 'client/client.lua', 'client/events.lua',
+                'client/renderer.lua', 'client/visualizer.lua', 'client/commands.lua'}
+server_scripts {'@oxmysql/lib/MySQL.lua', 'config.lua', 'server/server.lua', 'server/events.lua', 'server/commands.lua'}
+ui_page "nui://jo_libs/nui/menu/index.html"
+
+shared_scripts {'@jo_libs/init.lua', '@ox_lib/init.lua'}
+
+jo_libs {'menu', 'input'}
+ox_libs {'Interface', 'pedTexture'}
