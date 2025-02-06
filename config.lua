@@ -78,7 +78,7 @@ Config.DefaultChar = {
             Heads = { "A0BE4A7B", "1E78F6D", "27A4DC22", "5E9A394D", "7BE9E352", "7D7AA347", "839997EF", 
                       "876B1FAE", "8BC1469D", "9324DB9E", "970F3409", "A11747C5", "CA6DABEE",
                       "DC8DA4BA", "DFBFB8F4", "ED8EDA8E", "E79A7372", "E78826B1", "F0FB1DF0", },
-            Body = { "206061DB", "16E292A1", "206061DB", "4AEEDD87", "4BD8F4A1", "BA59624D", "F6496128" },
+            Body = { "206061DB", "16E292A1", "4AEEDD87", "4BD8F4A1", "BA59624D", "F6496128" },
             Legs = { "84BAA309", "8AD16414", "A615E02", "E4B584D5", "F11CF1FA", "F2EA7BDE" },
             HeadTexture = { "mp_head_mr1_sc08_c0_000_ab" },
         },

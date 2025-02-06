@@ -93,7 +93,7 @@ function RegisterBodyIndexs(skin)
     end
 
     for key, value in pairs(Config.BodyType.Body) do
-        if skin.Body == value then
+        if skin.BodyType == value then
             BodyTracker = key
             break
         end
@@ -284,16 +284,16 @@ function setSkinColor(index, gender)
 
     local SkinColor = Config.DefaultChar[gender][index]
     local legs = tonumber("0x" .. SkinColor.Legs[LegsTypeTracker])
-    local bodyType = tonumber("0x" .. SkinColor.Body[BodyTypeTracker])
+    local Body = tonumber("0x" .. SkinColor.Body[BodyTracker])
     local headtexture = joaat(SkinColor.HeadTexture[1])
     local albedo = Config.texture_types[gender].albedo
     PlayerSkin.HeadType = heads
-    PlayerSkin.BodyType = bodyType
+    PlayerSkin.BodyType = Body
     PlayerSkin.LegsType = legs
     PlayerSkin.albedo = headtexture
     IsPedReadyToRender()
     ApplyShopItemToPed(heads)
-    ApplyShopItemToPed(bodyType)
+    ApplyShopItemToPed(Body)
     ApplyShopItemToPed(legs)
     Citizen.InvokeNative(0xC5E7204F322E49EB, albedo, headtexture, 0x7FC5B1E1)
     UpdatePedVariation()
@@ -311,17 +311,16 @@ function getNaked()
     UpdatePedVariation()
 end
 
-function setBody(index, gender)
+function setBodyType(index, gender)
     local Comp = Config.DefaultChar[gender][SkinColorTracker]
     local compType = tonumber("0x" .. Comp["Body"][index])
-    PlayerSkin.Torso = compType
-    PlayerSkin.Body = compType
+    PlayerSkin.BodyType = compType
     BodyTypeTracker = index
 
     IsPedReadyToRender()
     ApplyShopItemToPed(compType)
     UpdatePedVariation()
-    print("BodyVariant: "..PlayerSkin.Body)
+    print("BodyType: "..PlayerSkin.Body)
 end
 
 function setLegs(index, gender)
@@ -329,7 +328,6 @@ function setLegs(index, gender)
     local compType = tonumber("0x" .. Comp["Legs"][index])
 
     PlayerSkin.LegsType = compType
-    PlayerSkin.legs = compType
     LegsTypeTracker = index
 
     IsPedReadyToRender()
@@ -358,13 +356,14 @@ function setWaist(index)
     WaistTracker = index
 end
 
-function setBodyVariant(index)
+function setBody(index)
     local body = Config.BodyType.Body[index]
     IsPedReadyToRender()
     EquipMetaPedOutfit(PlayerPedId(), body)
     UpdatePedVariation()
-    PlayerSkin.body = body
-    print("BodyVariant: "..PlayerSkin.body)
+    PlayerSkin.Body = body
+    PlayerSkin.Torso = body
+    print("BodyVariant: "..PlayerSkin.Body)
     BodyTracker = index
 end
 

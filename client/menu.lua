@@ -193,26 +193,28 @@ function CreateSkinColorMenu()
         local switches = {}
         for i, v in ipairs(targetTable) do
             table.insert(switches, {
-                label = Config.DefaultChar[gender][SkinColorTracker].label .. "/" .. v,
+                label = Config.DefaultChar[gender][SkinColorTracker].label .. "/" .. i,
                 data = i
             })
         end
         return switches
     end
 
-    local bodySwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Body)
+    local BodyTypeSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Body)
     local headSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Heads)
     local legsSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Legs)
-    local waistSwitches = generateSwitches(Config.BodyType.Waist)
-    local bodyVariantSwitches = generateSwitches(Config.BodyType.Body)
 
-    local bodyTypeSwitches = {}
-    for i = 1, #Config.DefaultChar[gender] do
-        table.insert(bodyTypeSwitches, {
-            label = Config.DefaultChar[gender][i].label,
-            data = i
-        })
-    end
+    local waistSwitches = generateSwitches(Config.BodyType.Waist)
+    local bodySwitches = generateSwitches(Config.BodyType.Body)
+
+    -- local BodyTypeSwitches = {}
+
+    -- for i = 1, #Config.DefaultChar[gender] do
+    --     table.insert(BodyTypeSwitches, {
+    --         label = Config.DefaultChar[gender][i].label,
+    --         data = i
+    --     })
+    -- end
 
     local bodyMenu = jo.menu.create(bodyMenuID, {
         title = "Tvorba postavy",
@@ -231,7 +233,7 @@ function CreateSkinColorMenu()
         sliders = {{
             type = "switch",
             current = 1,
-            values = bodyTypeSwitches
+            values = BodyTypeSwitches
         }},
         onChange = function(currentData)
             -- Při změně rasy resetnu indexy
@@ -244,13 +246,14 @@ function CreateSkinColorMenu()
             debugPrint("Index rasy: " .. index)
             setSkinColor(index, gender)
 
-            bodySwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Body)
+            BodyTypeSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Body)
             headSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Heads)
             legsSwitches = generateSwitches(Config.DefaultChar[gender][SkinColorTracker].Legs)
-            waistSwitches = generateSwitches(Config.BodyType.Waist)
-            bodyVariantSwitches = generateSwitches(Config.BodyType.Body)
 
-            createBodyMenu(headSwitches, bodySwitches, legsSwitches, waistSwitches, bodyVariantSwitches, gender)
+            waistSwitches = generateSwitches(Config.BodyType.Waist)
+            bodySwitches = generateSwitches(Config.BodyType.Body)
+
+            createBodyMenu(headSwitches, BodyTypeSwitches, legsSwitches, waistSwitches, bodySwitches, gender)
         end
     })
 
@@ -262,10 +265,10 @@ function CreateSkinColorMenu()
     bodyMenu:send()
 
     -- Vytvoření podmenu "Úprava těla"
-    createBodyMenu(headSwitches, bodySwitches, legsSwitches, waistSwitches, bodyVariantSwitches, gender)
+    createBodyMenu(headSwitches, BodyTypeSwitches, legsSwitches, waistSwitches, bodySwitches, gender)
 end
 
-function createBodyMenu(headSwitches, bodySwitches, legsSwitches, waistSwitches, bodyVariantSwitches, gender)
+function createBodyMenu(headSwitches, BodyTypeSwitches, legsSwitches, waistSwitches, bodySwitches, gender)
     local menu = jo.menu.create(bodyModifyMenuID, {
         title = "Úprava těla",
         onEnter = function()
@@ -404,12 +407,12 @@ function createBodyMenu(headSwitches, bodySwitches, legsSwitches, waistSwitches,
         sliders = {{
             type = "switch",
             current = 1,
-            values = bodySwitches
+            values = BodyTypeSwitches
         }},
         onChange = function(currentData)
             local index = math.floor(tonumber(currentData.item.sliders[1].current))
-            debugPrint("Index těla: " .. index)
-            setBody(index, gender)
+            debugPrint("Index textury těla: " .. index)
+            setBodyType(index, gender)
         end
     })
 
@@ -418,12 +421,12 @@ function createBodyMenu(headSwitches, bodySwitches, legsSwitches, waistSwitches,
         sliders = {{
             type = "switch",
             current = 1,
-            values = bodyVariantSwitches
+            values = bodySwitches
         }},
         onChange = function(currentData)
             local index = math.floor(tonumber(currentData.item.sliders[1].current))
             debugPrint("Index varianty těla: " .. index)
-            setBodyVariant(index)
+            setBody(index)
         end
     })
 
