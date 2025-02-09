@@ -1,2 +1,0 @@
-MDTOpen = false
-LangInitialize = false
