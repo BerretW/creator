@@ -1,20 +1,13 @@
-fx_version 'adamant'
-game 'rdr3'
+fx_version "adamant"
+
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-shared_scripts {
-    'config.lua',
-    'common.lua'
-}
+game "rdr3"
+lua54 'yes'
 
-server_script 'server.lua'
+client_scripts {"@uiprompt/uiprompt.lua",'config.lua', 'client/client.lua', 'client/events.lua','client/renderer.lua', 'client/animation.lua'}
 
-files {
-    'ui/index.html',
-    'ui/script.js',
-    'ui/style.css'
-}
+server_scripts {'@oxmysql/lib/MySQL.lua', 'config.lua', 'server/server.lua', 'server/events.lua'}
 
-ui_page 'ui/index.html'
+shared_scripts {'@jo_libs/init.lua','@ox_lib/init.lua' }
 
-client_scripts { 'client.lua', 'prompt.lua' }
