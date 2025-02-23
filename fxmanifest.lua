@@ -3,21 +3,18 @@ game 'rdr3'
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
 shared_scripts {
-	'config.lua',
-	'common.lua'
+    'config.lua',
+    'common.lua'
 }
 
 server_script 'server.lua'
 
 files {
-	'ui/index.html',
-	'ui/style.css',
-	'ui/script.js',
-	'ui/jsmediatags.min.js',
-	'ui/chineserocks.ttf',
-	'ui/loading.svg'
+    'ui/index.html',
+    'ui/script.js',
+    'ui/style.css'
 }
 
 ui_page 'ui/index.html'
 
-client_script 'client.lua'
+client_scripts { 'client.lua', 'prompt.lua' }

@@ -1,22 +1,21 @@
+-- Exportování struktury pro tabulka s29_dev-redm.aprts_phono_cylinders
+-- CREATE TABLE IF NOT EXISTS `aprts_phono_cylinders` (
+--   `id` int(11) NOT NULL AUTO_INCREMENT,
+--   `item` varchar(50) NOT NULL,
+--   `url` varchar(255) NOT NULL,
+--   `coords` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`coords`)),
+--   PRIMARY KEY (`id`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Minimalistická verze server.lua
+--  - Přidává a odebírá "Phonograph" do tabulky Phonographs
+--  - Spouští hudbu z eventu "phonograph:start"
+--  - Umožňuje načíst itemy z DB, které po použití spustí hudbu (TriggerClientEvent)
 local Phonographs = {}
 local SyncQueue = {}
+local MySQL = exports.oxmysql
 
+-- SERVER EVENTY
 RegisterNetEvent('phonograph:start')
-RegisterNetEvent('phonograph:init')
-RegisterNetEvent('phonograph:pause')
-RegisterNetEvent('phonograph:stop')
-RegisterNetEvent('phonograph:showControls')
-RegisterNetEvent('phonograph:toggleStatus')
-RegisterNetEvent('phonograph:setVolume')
-RegisterNetEvent('phonograph:setStartTime')
-RegisterNetEvent('phonograph:lock')
-RegisterNetEvent('phonograph:unlock')
-RegisterNetEvent('phonograph:enableVideo')
-RegisterNetEvent('phonograph:disableVideo')
-RegisterNetEvent('phonograph:setVideoSize')
-RegisterNetEvent('phonograph:mute')
-RegisterNetEvent('phonograph:unmute')
-RegisterNetEvent('phonograph:copy')
 
 function Enqueue(queue, cb)
     table.insert(queue, 1, cb)
@@ -24,18 +23,17 @@ end
 
 function Dequeue(queue)
     local cb = table.remove(queue)
-
     if cb then
         cb()
     end
 end
 
-function AddPhonograph(handle, url, title, volume, offset, filter, locked, video, videoSize, muted, coords)
+-- Přidá phonograph do server tabulky
+function AddPhonograph(handle, url, title, volume, offset, coords)
     if not Phonographs[handle] then
         title = title or url
         volume = Clamp(volume, 0, 100, 50)
         offset = offset or 0
-        videoSize = Clamp(videoSize, 10, 100, 50)
 
         Phonographs[handle] = {
             url = url,
@@ -43,15 +41,10 @@ function AddPhonograph(handle, url, title, volume, offset, filter, locked, video
             volume = volume,
             startTime = os.time() - offset,
             offset = 0,
-            filter = filter,
-            locked = locked,
-            video = video,
-            videoSize = videoSize,
-            coords = coords,
-            paused = nil,
-            muted = muted
+            paused = nil
         }
 
+        -- Po přidání odešleme informaci klientům, ať se to hned "pustí"
         Enqueue(SyncQueue, function()
             TriggerClientEvent('phonograph:play', -1, handle)
         end)
@@ -60,486 +53,136 @@ end
 
 function RemovePhonograph(handle)
     Phonographs[handle] = nil
-
     Enqueue(SyncQueue, function()
         TriggerClientEvent('phonograph:stop', -1, handle)
     end)
 end
 
-function PausePhonograph(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if Phonographs[handle].paused then
-        Phonographs[handle].startTime = Phonographs[handle].startTime + (os.time() - Phonographs[handle].paused)
-        Phonographs[handle].paused = nil
-    else
-        Phonographs[handle].paused = os.time()
-    end
-end
-
-function StartPhonographByNetworkId(netId, url, title, volume, offset, filter, locked, video, videoSize, muted)
-    if url == 'random' then
-        url = GetRandomPreset()
-    end
-
-    if Config.Presets[url] then
-        AddPhonograph(netId, Config.Presets[url].url, Config.Presets[url].title, volume, offset,
-            Config.Presets[url].filter or false, locked, Config.Presets[url].video or false, videoSize, muted, nil)
-    else
-        AddPhonograph(netId, url, title, volume, offset, filter, locked, video, videoSize, muted, nil)
-    end
-
-    return netId
-end
-
-function StartPhonographByCoords(x, y, z, url, title, volume, offset, filter, locked, video, videoSize, muted)
-    local coords = vector3(x, y, z)
-    local handle = GetHandleFromCoords(coords)
-
-    if url == 'random' then
-        url = GetRandomPreset()
-    end
-
-    if Config.Presets[url] then
-        AddPhonograph(handle, Config.Presets[url].url, Config.Presets[url].title, volume, offset,
-            Config.Presets[url].filter or false, locked, Config.Presets[url].video or false, videoSize, muted, coords)
-    else
-        AddPhonograph(handle, url, title, volume, offset, filter, locked, video, videoSize, muted, coords)
-    end
-
-    return handle
-end
-
-function ErrorMessage(player, message)
-    TriggerClientEvent('phonograph:error', player, message)
-end
-
-function StartDefaultPhonographs()
-    for _, phonograph in ipairs(Config.DefaultPhonographs) do
-        if phonograph.url then
-            StartPhonographByCoords(phonograph.x, phonograph.y, phonograph.z, phonograph.url, phonograph.title,
-                phonograph.volume, phonograph.offset, phonograph.filter, phonograph.locked, phonograph.video,
-                phonograph.videoSize, phonograph.muted)
-        end
-    end
-end
-
-function SyncPhonographs()
-    for handle, _ in pairs(Phonographs) do
-        if not Phonographs[handle].paused then
-            Phonographs[handle].offset = os.time() - Phonographs[handle].startTime
-        end
-    end
-
-    for _, playerId in ipairs(GetPlayers()) do
-        TriggerClientEvent('phonograph:sync', playerId, Phonographs, IsPlayerAceAllowed(playerId, 'phonograph.manage'),
-            IsPlayerAceAllowed(playerId, 'phonograph.anyUrl'))
-    end
-
-    Dequeue(SyncQueue)
-end
-
-function IsLockedDefaultPhonograph(handle)
-    for _, phonograph in ipairs(Config.DefaultPhonographs) do
-        local coords = vector3(phonograph.x, phonograph.y, phonograph.z)
-
-        if handle == GetHandleFromCoords(coords) and phonograph.locked then
-            return true
-        end
-    end
-
-    return false
-end
-
-function LockPhonograph(handle)
-    Phonographs[handle].locked = true
-end
-
-function UnlockPhonograph(handle)
-    Phonographs[handle].locked = false
-end
-
-function MutePhonograph(handle)
-    Phonographs[handle].muted = true
-end
-
-function UnmutePhonograph(handle)
-    Phonographs[handle].muted = false
-end
-
-function CopyPhonograph(oldHandle, newHandle, newCoords)
-    if newHandle then
-        StartPhonographByNetworkId(newHandle, Phonographs[oldHandle].url, Phonographs[oldHandle].title,
-            Phonographs[oldHandle].volume, Phonographs[oldHandle].offset, Phonographs[oldHandle].filter,
-            Phonographs[oldHandle].locked, Phonographs[oldHandle].video, Phonographs[oldHandle].videoSize,
-            Phonographs[oldHandle].muted)
-    elseif newCoords then
-        StartPhonographByCoords(newCoords.x, newCoords.y, newCoords.z, Phonographs[oldHandle].url,
-            Phonographs[oldHandle].title, Phonographs[oldHandle].volume, Phonographs[oldHandle].offset,
-            Phonographs[oldHandle].filter, Phonographs[oldHandle].locked, Phonographs[oldHandle].video,
-            Phonographs[oldHandle].videoSize, Phonographs[oldHandle].muted)
-    end
-end
-
-exports('startByNetworkId', StartPhonographByNetworkId)
-exports('startByCoords', StartPhonographByCoords)
-exports('stop', RemovePhonograph)
-exports('pause', PausePhonograph)
-exports('lock', LockPhonograph)
-exports('unlock', UnlockPhonograph)
-exports('mute', MutePhonograph)
-exports('unmute', UnmutePhonograph)
-
+-- Hlavní start event
 AddEventHandler('phonograph:start',
     function(handle, url, volume, offset, filter, locked, video, videoSize, muted, coords)
-		
+        local _source = source
+        print("Starting phonograph", handle, url, volume, offset, filter, locked, video, videoSize, muted, coords)
+        -- Pokud handle == nil, ale coords != nil => handle spočítáme z coords
         if coords then
             handle = GetHandleFromCoords(coords)
         end
 
         if Phonographs[handle] then
+            -- Pokud už existuje, nic nedělej (minimal verze ignoruje)
             return
         end
 
-        if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-            ErrorMessage(source, 'You do not have permission to play a song on a phonograph')
-            return
-        end
-
-        if (locked or IsLockedDefaultPhonograph(handle)) and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-            ErrorMessage(source, 'You do not have permission to play a song on a locked phonograph')
-            return
-        end
-
-        if Config.Presets[url] then
-            TriggerClientEvent('phonograph:start', source, handle, Config.Presets[url].url, Config.Presets[url].title,
-                volume, offset, Config.Presets[url].filter or false, locked, Config.Presets[url].video or false,
-                videoSize, muted, coords)
-        elseif IsPlayerAceAllowed(source, 'phonograph.anyUrl') then
-            TriggerClientEvent('phonograph:start', source, handle, url, nil, volume, offset, filter, locked, video,
-                videoSize, muted, coords)
-        else
-            ErrorMessage(source, 'You must select from one of the pre-defined songs (/phono songs)')
-        end
+        -- Vložíme do "Phonographs" a pošleme klientům
+        AddPhonograph(handle, url, url, volume, offset, coords)
+        -- Všichni klienti si to musí "initnout"
+        TriggerClientEvent('phonograph:start', -1, handle, url, url, volume, offset, false, false, false, 50, false,
+            coords)
     end)
 
-AddEventHandler('phonograph:init',
-    function(handle, url, title, volume, offset, filter, locked, video, videoSize, muted, coords)
-        if Phonographs[handle] then
-            return
-        end
-
-        if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-            ErrorMessage(source, 'You do not have permission to play a song on a phonograph')
-            return
-        end
-
-        if (locked or IsLockedDefaultPhonograph(handle)) and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-            ErrorMessage(source, 'You do not have permission to play a song on a locked phonographs')
-            return
-        end
-
-        AddPhonograph(handle, url, title, volume, offset, filter, locked, video, videoSize, muted, coords)
-    end)
-
-AddEventHandler('phonograph:pause', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to pause or resume phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to pause or resume locked phonographs')
-        return
-    end
-
-    PausePhonograph(handle)
-end)
-
-AddEventHandler('phonograph:stop', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to stop phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to stop locked phonographs')
-        return
-    end
-
-    RemovePhonograph(handle)
-end)
-
-AddEventHandler('phonograph:showControls', function()
-    TriggerClientEvent('phonograph:showControls', source)
-end)
-
-AddEventHandler('phonograph:toggleStatus', function()
-    TriggerClientEvent('phonograph:toggleStatus', source)
-end)
-
-AddEventHandler('phonograph:setVolume', function(handle, volume)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to change the volume of phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to change the volume of locked phonographs')
-        return
-    end
-
-    Phonographs[handle].volume = Clamp(volume, 0, 100, 50)
-end)
-
-AddEventHandler('phonograph:setStartTime', function(handle, time)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to seek on phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to seek on locked phonographs')
-        return
-    end
-
-    Phonographs[handle].startTime = time
-end)
-
-AddEventHandler('phonograph:lock', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to lock a phonograph')
-        return
-    end
-
-    LockPhonograph(handle)
-end)
-
-AddEventHandler('phonograph:unlock', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to unlock a phonograph')
-        return
-    end
-
-    UnlockPhonograph(handle)
-end)
-
-AddEventHandler('phonograph:enableVideo', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to enable video on phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to enable video on locked phonographs')
-        return
-    end
-
-    Phonographs[handle].video = true
-end)
-
-AddEventHandler('phonograph:disableVideo', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to disable video on phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to disable video on locked phonographs')
-        return
-    end
-
-    Phonographs[handle].video = false
-end)
-
-AddEventHandler('phonograph:setVideoSize', function(handle, size)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to change video size on phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to change video size on locked phonographs')
-        return
-    end
-
-    Phonographs[handle].videoSize = Clamp(size, 10, 100, 50)
-end)
-
-AddEventHandler('phonograph:mute', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to mute phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to mute locked phonographs')
-        return
-    end
-
-    MutePhonograph(handle)
-end)
-
-AddEventHandler('phonograph:unmute', function(handle)
-    if not Phonographs[handle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to mute phonographs')
-        return
-    end
-
-    if Phonographs[handle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to mute locked phonographs')
-        return
-    end
-
-    UnmutePhonograph(handle)
-end)
-
-AddEventHandler('phonograph:copy', function(oldHandle, newHandle, newCoords)
-    if not Phonographs[oldHandle] then
-        return
-    end
-
-    if not IsPlayerAceAllowed(source, 'phonograph.interact') then
-        ErrorMessage(source, 'You do not have permission to copy phonographs')
-        return
-    end
-
-    if Phonographs[oldHandle].locked and not IsPlayerAceAllowed(source, 'phonograph.manage') then
-        ErrorMessage(source, 'You do not have permission to mute locked phonographs')
-        return
-    end
-
-    CopyPhonograph(oldHandle, newHandle, newCoords)
-end)
-
--- RegisterCommand('phonoctl', function(source, args, raw)
---     if #args < 1 then
---         print('Usage:')
---         print('  phonoctl list')
---         print('  phonoctl lock <handle>')
---         print('  phonoctl unlock <handle>')
---         print('  phonoctl mute <handle>')
---         print('  phonoctl unmute <handle>')
---         print('  phonoctl pause <handle>')
---         print('  phonoctl stop <handle>')
---     elseif args[1] == 'list' then
---         for handle, info in pairs(Phonographs) do
---             print(string.format('[%x] %s %d %d %s %s %s %s', handle, info.title, info.volume, info.offset,
---                 info.locked and 'locked' or 'unlocked', info.video and 'video' or 'audio',
---                 info.muted and 'muted' or 'unmuted', info.paused and 'paused' or 'playing'))
---         end
---     elseif args[1] == 'lock' then
---         LockPhonograph(tonumber(args[2], 16))
---     elseif args[1] == 'unlock' then
---         UnlockPhonograph(tonumber(args[2], 16))
---     elseif args[1] == 'mute' then
---         MutePhonograph(tonumber(args[2], 16))
---     elseif args[1] == 'unmute' then
---         UnmutePhonograph(tonumber(args[2], 16))
---     elseif args[1] == 'pause' then
---         PausePhonograph(tonumber(args[2], 16))
---     elseif args[1] == 'stop' then
---         RemovePhonograph(tonumber(args[2], 16))
---     end
--- end, true)
-
+-- SYNC FUNGOVAL DŘÍVE - TEĎ HO MÁME ZJEDNODUŠENÝ
 CreateThread(function()
-    StartDefaultPhonographs()
-
     while true do
         Wait(500)
-        SyncPhonographs()
+        for handle, info in pairs(Phonographs) do
+            if not info.paused then
+                info.offset = os.time() - info.startTime
+            end
+        end
+        Dequeue(SyncQueue)
     end
 end)
 
+---------------------------------------
+-- PŘÍKLAD: Načítání itemů z DB tabulky aprts_phono
+-- a registrace itemů, které při použití spustí váleček.
+
 local drums = {}
-local MySQL = exports.oxmysql
-
--- RegisterCommand("addDrum", function(source, args, raw)
--- 	local _source = source
-	
--- 	local item = args[1]
--- 	local name = args[2]
--- 	local url = args[3]
--- 	MySQL:execute('INSERT INTO aprts_phono (item, name, url) VALUES (@item, @name, @url)', {
--- 		['@item'] = item,
--- 		['@name'] = name,
--- 		['@url'] = url
--- 	}, function(rowsChanged)
--- 		if rowsChanged > 0 then
--- 			exports.vorp_inventory:registerUsableItem(item, function(data)
--- 				local _source = data.source
--- 				exports.vorp_inventory:closeInventory(data.source)
--- 				TriggerClientEvent('phonograph:Client:play', data.source, url)
--- 			end)
--- 			TriggerClientEvent('chat:addMessage', _source, {
--- 				args = {'^2[Phonograph]', 'Drum ' .. name .. ' byl úspěšně vytvořen.'}
--- 			})
--- 		end
--- 	end)
--- end)
-
-
+local inserterDrums = {}
 AddEventHandler('onResourceStart', function(resource)
-	if resource == GetCurrentResourceName() then
-		MySQL:execute('SELECT * FROM aprts_phono', {}, function(results)
-			drums = results
-			for _,drum in pairs(drums) do
-				if drum.item then
-					exports.vorp_inventory:registerUsableItem(drum.item, function(data)
-						local _source = data.source
-						exports.vorp_inventory:closeInventory(data.source)
-                        print("Playing " .. drum.url)
-						TriggerClientEvent('phonograph:Client:play', data.source, drum.url)
-					end)
-				end
-			end
-		end)
-	end
+    if resource == GetCurrentResourceName() then
+        MySQL:execute('SELECT * FROM aprts_phono', {}, function(results)
+            drums = results
+            for _, drum in pairs(drums) do
+                if drum.item then
+                    exports.vorp_inventory:registerUsableItem(drum.item, function(data)
+                        local _source = data.source
+                        exports.vorp_inventory:closeInventory(_source)
+                        -- Po použití itemu spustíme přehrávání
+                        -- TriggerClientEvent => fonograf, abychom měli 3D audio u fonografu poblíž
+                        -- TriggerClientEvent('phonograph:Client:play', _source, drum)
+                        TriggerClientEvent("phonograph:Client:insertDrum", _source, drum)
+                    end)
+                end
+            end
+        end)
+        MySQL:execute('SELECT * FROM aprts_phono_cylinders', {}, function(results)
+            for _, drum in pairs(results) do
+                drum.coords = json.decode(drum.coords)
+                table.insert(inserterDrums, drum)
+            end
+        end)
+    end
+end)
+
+function distance(vector, coords)
+    local coords = vector3(coords.x, coords.y, coords.z)
+    return #(vector - coords)
+end
+
+RegisterServerEvent('phonograph:Server:insertDrum')
+AddEventHandler('phonograph:Server:insertDrum', function(item, coords, drumURL)
+    -- add Drum to table, if there is another drum on the same coords, remove it and give it to players inventory
+    local _source = source
+    local coords = GetHandleFromCoords(coords)
+    for i, drum in ipairs(inserterDrums) do
+        if coords == drum.coords then
+            MySQL:execute('DELETE FROM aprts_phono_cylinders WHERE id = ?', {drum.id})
+            exports.vorp_inventory:addItem(_source, drum.item, 1)
+
+            table.remove(inserterDrums, i)
+            RemovePhonograph(coords)
+            break
+        end
+    end
+    MySQL:execute('INSERT INTO aprts_phono_cylinders (item, url, coords) VALUES (?, ?, ?)', {item, drumURL, coords},
+        function(result)
+            -- print(json.encode(insertId))
+            print("Inserted drum", item, drumURL, coords, result.insertId)
+            table.insert(inserterDrums, {
+                id = result.insertId,
+                item = item,
+                url = drumURL,
+                coords = coords
+            })
+        end)
+    exports.vorp_inventory:subItem(_source, item, 1)
+end)
+
+RegisterServerEvent("phonograph:Server:removeDrum")
+AddEventHandler("phonograph:Server:removeDrum", function(coords)
+    local _source = source
+    print("Removing drum", coords)
+    for i, drum in ipairs(inserterDrums) do
+        if coords == drum.coords then
+            MySQL:execute('DELETE FROM aprts_phono_cylinders WHERE id = ?', {drum.id})
+            exports.vorp_inventory:addItem(_source, drum.item, 1)
+            table.remove(inserterDrums, i)
+            RemovePhonograph(coords)
+            break
+        end
+    end
+end)
+
+RegisterServerEvent("phonograph:Server:playDrum")
+AddEventHandler("phonograph:Server:playDrum", function(coords)
+    local _source = source
+    for i, drum in ipairs(inserterDrums) do
+        print("Searching drum", coords, drum.coords)
+        if coords == drum.coords then
+            print("Drum found")
+            TriggerClientEvent('phonograph:Client:play', -1, drum)
+            break
+        end
+    end
 end)
