@@ -45,6 +45,7 @@ function AddPhonograph(handle, url, title, volume, offset, coords)
 end
 
 function RemovePhonograph(handle)
+    print('phonograph:stop', handle)
     Phonographs[handle] = nil
     Enqueue(SyncQueue, function()
         TriggerClientEvent('phonograph:stop', -1, handle)
@@ -190,9 +191,9 @@ AddEventHandler("phonograph:Server:removeDrum", function(coordsHash)
     -- V původní verzi jsi sem posílal handle => teď je to spíš handle
     -- anebo voláš to Prompt? (playDrum ... removeDrum... atp.)
     -- Tady to tedy interpretujeme jako "handle", tak najdeme reálné coords v inserterDrums.
-
     for i, drum in ipairs(inserterDrums) do
         local handleDrum = GetHandleFromCoords(drum.coords)
+
         if coordsHash == handleDrum then
             -- Smažeme z DB
             MySQL:execute('DELETE FROM aprts_phono_cylinders WHERE id = ?', {drum.id})

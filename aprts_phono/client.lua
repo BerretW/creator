@@ -23,6 +23,7 @@ end)
 -- Event, co server volá => "přehraj"
 RegisterNetEvent('phonograph:play')
 AddEventHandler('phonograph:play', function(handle)
+    print('phonograph:play', handle)
     SendNUIMessage({
         type   = 'play',
         handle = handle
@@ -32,6 +33,7 @@ end)
 -- Event, co server volá => "zastav"
 RegisterNetEvent('phonograph:stop')
 AddEventHandler('phonograph:stop', function(handle)
+    print('phonograph:stop', handle)
     Phonographs[handle] = nil
     SendNUIMessage({
         type   = 'stop',
@@ -64,11 +66,15 @@ AddEventHandler('phonograph:Client:stop', function()
     if not object then return end
     local coords = GetEntityCoords(object)
     local handle = GetHandleFromCoords(coords)
-    Phonographs[handle] = nil
+
+    -- Poslat správný příkaz do NUI
     SendNUIMessage({
         type   = 'stop',
         handle = handle
     })
+
+    -- Oprava: skutečně odstraníme fonograf ze seznamu
+    Phonographs[handle] = nil
 end)
 
 -- Zavolá server, aby spustil hudbu na daném objektu
@@ -150,39 +156,50 @@ local function GetLogVolume(distance, maxDist, baseVol)
 end
 
 -- Každých 500ms spočítá vzdálenost a do NUI pošle "distanceVolume"
-CreateThread(function()
-    while true do
-        Wait(500)
-        local pedCoords = GetEntityCoords(PlayerPedId())
-
-        for handle, info in pairs(Phonographs) do
-            local realVolume = 0.0
-            local objCoords = nil
-
-            if info.netId and NetworkDoesNetworkIdExist(info.netId) then
-                local obj = NetToObj(info.netId)
-                if obj and obj ~= 0 then
-                    objCoords = GetEntityCoords(obj)
+    CreateThread(function()
+        while true do
+            Wait(500)
+            local pedCoords = GetEntityCoords(PlayerPedId())
+    
+            for handle, info in pairs(Phonographs) do
+                local realVolume = 0.0
+                local objCoords = nil
+    
+                if info.netId and NetworkDoesNetworkIdExist(info.netId) then
+                    local obj = NetToObj(info.netId)
+                    if obj and obj ~= 0 then
+                        objCoords = GetEntityCoords(obj)
+                    end
+                end
+                if not objCoords and info.coords then
+                    objCoords = vector3(info.coords.x, info.coords.y, info.coords.z)
+                end
+    
+                if objCoords then
+                    local dist = #(pedCoords - objCoords)
+                    if dist > Config.MaxDistance then
+                        -- Pokud je hráč mimo dosah, okamžitě stopni zvuk
+                        SendNUIMessage({
+                            type   = 'stop',
+                            handle = handle
+                        })
+                        Phonographs[handle] = nil
+                    else
+                        local baseVol = (info.volume / 100.0) -- 0.0 - 1.0
+                        realVolume = GetLogVolume(dist, Config.MaxDistance, baseVol)
+                        
+                        -- Poslat hlasitost do NUI
+                        SendNUIMessage({
+                            type   = 'distanceVolume',
+                            handle = handle,
+                            volume = realVolume
+                        })
+                    end
                 end
             end
-            if not objCoords and info.coords then
-                objCoords = vector3(info.coords.x, info.coords.y, info.coords.z)
-            end
-
-            if objCoords then
-                local dist = #(pedCoords - objCoords)
-                local baseVol = (info.volume / 100.0) -- 0.0 - 1.0
-                realVolume = GetLogVolume(dist, Config.MaxDistance, baseVol)
-            end
-
-            SendNUIMessage({
-                type   = 'distanceVolume',
-                handle = handle,
-                volume = realVolume
-            })
         end
-    end
-end)
+    end)
+    
 
 ------------------------------------------------------------------
 -- Pokud chceš, aby nově připojený hráč slyšel už hrající fonograf,
