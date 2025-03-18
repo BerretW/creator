@@ -1,0 +1,10 @@
+[
+  {
+    "event": "close",
+    "data": {}
+  },
+  {
+    "event": "selectOption",
+    "data": {}
+  }
+]

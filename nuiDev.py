@@ -19,13 +19,13 @@ from lupa import LuaRuntime
 # -------------------------------------------------------------------
 # Logging konfigurace
 # -------------------------------------------------------------------
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # -------------------------------------------------------------------
 # MOCK funkce pro interpretaci fxmanifest.lua v Lupa
 # -------------------------------------------------------------------
 MOCK_FUNCS = r"""
--- Fake funkce, které FiveM/RedM používá v manifestu, ale v čisté Lua normálně neexistují
 function fx_version(...) end
 function game(...) end
 function games(...) end
@@ -33,7 +33,6 @@ function rdr3_warning(...) end
 function lua54(...) end
 
 function ui_page(val)
-    -- Uložíme do globální tabulky _G
     _G["ui_page"] = val
 end
 
@@ -48,19 +47,29 @@ end
 function server_scripts(val)
     _G["server_scripts"] = val
 end
-
--- Pokud by v manifestu byla i shared_scripts, author, description, version apod., definuj je taky:
--- function shared_scripts(val) _G["shared_scripts"] = val end
--- function author(val) end
--- function description(val) end
--- function version(val) end
 """
 
 # -------------------------------------------------------------------
-# Jednoduchá třída NUIMessage
+# Pomocné funkce
 # -------------------------------------------------------------------
+
+
+def is_lua_table(obj) -> bool:
+    return "LuaTable" in type(obj).__name__
+
+
+def lua_table_to_list(lua_table):
+    result = []
+    for k in lua_table.keys():
+        result.append(lua_table[k])
+    return result
+
+# -------------------------------------------------------------------
+# NUIMessage
+# -------------------------------------------------------------------
+
+
 class NUIMessage:
-    """Reprezentuje NUI zprávu (action + data)."""
     def __init__(self, action, data=None):
         self.action = action
         self.data = data or {}
@@ -69,8 +78,10 @@ class NUIMessage:
         return f"Action: {self.action}, Data: {json.dumps(self.data)}"
 
 # -------------------------------------------------------------------
-# ResourceAnalyzer: parsuje manifest, hledá NUI eventy, atd.
+# ResourceAnalyzer
 # -------------------------------------------------------------------
+
+
 class ResourceAnalyzer:
     def __init__(self, resource_path):
         self.resource_path = resource_path
@@ -78,141 +89,173 @@ class ResourceAnalyzer:
         self.client_scripts = []
         self.nui_events = set()
         self.ui_files = []
-        self.data = {}  # sem uložíme zjištěné info z manifestu: ui_page, files, client_scripts atp.
+        self.data = {}
 
     def analyze(self):
-        """ Hlavní metoda - načte fxmanifest + extrahuje client skripty + najde NUI eventy + UI files. """
+        logging.info(f"Analyzuji resource v cestě: {self.resource_path}")
         self.load_fxmanifest()
+        # Teď už je self.data naplněné + konvertované
+        logging.info(
+            f"DEBUG: po load_fxmanifest, self.data['client_scripts'] = {self.data.get('client_scripts', None)} (typ: {type(self.data.get('client_scripts', None))})")
+
         self.load_client_scripts()
         self.extract_nui_events()
         self.extract_ui_files()
         return self.data
 
     def load_fxmanifest(self):
-        """ Načte a interpretuje fxmanifest.lua pomocí Lupy s definovanými mock funkcemi. """
         if not os.path.exists(self.fxmanifest_path):
-            raise FileNotFoundError(f"fxmanifest.lua nenalezen v: {self.resource_path}")
+            raise FileNotFoundError(
+                f"fxmanifest.lua nenalezen v: {self.resource_path}")
 
         with open(self.fxmanifest_path, "r", encoding="utf-8") as f:
             manifest_content = f.read()
-        print("DEBUG: length of manifest_content =", len(manifest_content))
-        print("DEBUG: manifest_content repr =", repr(manifest_content))
-        # Přilepíme dohromady mock funkce + manifest
+
+        logging.info(
+            f"Načten fxmanifest.lua, délka: {len(manifest_content)} znaků.")
+
         lua_code = MOCK_FUNCS + "\n" + manifest_content
-
-        # (Volitelný debug - abys viděl, co Lupa dostává)
-        print("DEBUG: EXECUTED LUA CODE:\n")
-        print(lua_code)
-
         lua_runtime = LuaRuntime()
-        try:
-            # Spustíme kód
-            lua_runtime.execute(lua_code)
-            # Všechno, co 'ui_page', 'files', 'client_scripts' z manifestu definovalo,
-            # se ocitlo v lua_runtime.globals()
-            g = lua_runtime.globals()
+        lua_runtime.execute(lua_code)
+        g = lua_runtime.globals()
+        self.data = {}
 
-            self.data = {}
-            # Vytáhneme potřebné klíče, pokud tam jsou
-            if g.get("ui_page") is not None:
-                self.data["ui_page"] = g["ui_page"]
-            if g.get("files") is not None:
-                self.data["files"] = g["files"]
-            if g.get("client_scripts") is not None:
-                self.data["client_scripts"] = g["client_scripts"]
-            if g.get("server_scripts") is not None:
-                self.data["server_scripts"] = g["server_scripts"]
+        # 1) ui_page
+        if "ui_page" in g:
+            val = g["ui_page"]
+            if val is not None:
+                if is_lua_table(val):
+                    logging.info(
+                        "ui_page je LuaTable, konvertuji na list/string.")
+                    val = lua_table_to_list(val)
+                self.data["ui_page"] = val
+                logging.info(f"fxmanifest: ui_page -> {val}")
 
-            logging.info("fxmanifest.lua načten (přes mock funkce) a analyzován.")
+        # 2) files
+        if "files" in g:
+            val = g["files"]
+            if val is not None:
+                if is_lua_table(val):
+                    python_list = lua_table_to_list(val)
+                    self.data["files"] = python_list
+                    logging.info(
+                        f"fxmanifest: files -> {val} => {python_list}")
+                else:
+                    self.data["files"] = val
+                    logging.info(f"fxmanifest: files -> {val}")
 
-        except Exception as e:
-            logging.error(f"Chyba při parsování fxmanifest.lua: {e}")
-            raise Exception(f"Chyba při parsování fxmanifest.lua: {e}")
+        # 3) client_scripts
+        if "client_scripts" in g:
+            print("### DEBUG: client_scripts klíč byl nalezen v globals")
+            val = g["client_scripts"]
+            if val is not None:
+                if is_lua_table(val):
+                    python_list = lua_table_to_list(val)
+                    self.data["client_scripts"] = python_list
+                    logging.info(
+                        f"fxmanifest: client_scripts -> {val} => {python_list}")
+                else:
+                    self.data["client_scripts"] = val
+                    logging.info(f"fxmanifest: client_scripts -> {val}")
+
+        # 4) server_scripts
+        if "server_scripts" in g:
+            val = g["server_scripts"]
+            if val is not None:
+                if is_lua_table(val):
+                    python_list = lua_table_to_list(val)
+                    self.data["server_scripts"] = python_list
+                    logging.info(
+                        f"fxmanifest: server_scripts -> {val} => {python_list}")
+                else:
+                    self.data["server_scripts"] = val
+                    logging.info(f"fxmanifest: server_scripts -> {val}")
 
     def load_client_scripts(self):
-        """ 
-        Z `client_scripts` extrahujeme cesty k Lua souborům 
-        (pokud existují), abychom je potom mohli prohledat na NUI eventy.
-        """
-        if "client_scripts" in self.data:
-            cs = self.data["client_scripts"]
-            # FiveM povoluje definice jako string nebo list. V mocku je pak val = "string" nebo table.
-            if isinstance(cs, str):
-                # Jeden script
-                script_path = os.path.join(self.resource_path, cs)
-                if os.path.exists(script_path):
-                    self.client_scripts.append(script_path)
-                else:
-                    logging.warning(f"Client script nenalezen: {script_path}")
+        cs = self.data.get("client_scripts")
+        if cs is None:
+            logging.info("Nebyla definována žádná client_scripts v manifestu.")
+            return
 
-            elif isinstance(cs, list):
-                # Lua table je v Lupa obvykle mapován na Python list
-                for item in cs:
-                    if isinstance(item, str):
-                        script_path = os.path.join(self.resource_path, item)
-                        if os.path.exists(script_path):
-                            self.client_scripts.append(script_path)
-                        else:
-                            logging.warning(f"Client script nenalezen: {script_path}")
-                    else:
-                        logging.warning(f"Client script není string: {item}")
+        logging.info(f"DEBUG: load_client_scripts() -> {cs} (typ: {type(cs)})")
 
+        if isinstance(cs, str):
+            script_path = os.path.join(self.resource_path, cs)
+            if os.path.exists(script_path):
+                self.client_scripts.append(script_path)
+                logging.info(f"Byl nalezen client script: {script_path}")
             else:
-                logging.warning(f"client_scripts: nepodporovaný typ {type(cs)}")
+                logging.warning(f"Client script nenalezen: {script_path}")
+
+        elif isinstance(cs, list):
+            for item in cs:
+                if isinstance(item, str):
+                    script_path = os.path.join(self.resource_path, item)
+                    if os.path.exists(script_path):
+                        self.client_scripts.append(script_path)
+                        logging.info(
+                            f"Byl nalezen client script: {script_path}")
+                    else:
+                        logging.warning(
+                            f"Client script nenalezen: {script_path}")
+                else:
+                    logging.warning(f"Client script není string: {item}")
+        else:
+            logging.warning(f"client_scripts: nepodporovaný typ {type(cs)}")
 
         logging.info(f"Nalezeny client_scripts: {self.client_scripts}")
 
     def extract_nui_events(self):
-        """ 
-        V klientských skriptech vyhledáme `RegisterNUICallback('eventName', ...)`.
-        """
+        total_found = 0
         for script_path in self.client_scripts:
-            with open(script_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            # jednoruchý regex:
-            matches = re.findall(r"RegisterNUICallback\s*\(\s*['\"]([^'\"]+)['\"]", content)
-            for m in matches:
-                self.nui_events.add(m)
+            try:
+                with open(script_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                matches = re.findall(
+                    r"RegisterNUICallback\s*\(\s*['\"]([^'\"]+)['\"]", content)
+                for m in matches:
+                    self.nui_events.add(m)
+                logging.info(
+                    f"V souboru {script_path} nalezeno {len(matches)} NUI eventů.")
+                total_found += len(matches)
+            except Exception as e:
+                logging.error(f"Chyba při čtení {script_path}: {e}")
 
-        logging.info(f"Extrahované NUI eventy: {self.nui_events}")
+        logging.info(
+            f"Extrahované NUI eventy celkem: {self.nui_events} (počet: {total_found})")
 
     def extract_ui_files(self):
-        """
-        Z `ui_page` a `files` vybereme všechny .html, .css, .js (pokud existují).
-        """
-        # Zkusíme ui_page
-        if "ui_page" in self.data and isinstance(self.data["ui_page"], str):
-            up = self.data["ui_page"]
-            path = os.path.join(self.resource_path, up)
+        ui_page_val = self.data.get("ui_page")
+        if isinstance(ui_page_val, str):
+            path = os.path.join(self.resource_path, ui_page_val)
             if os.path.exists(path):
                 self.ui_files.append(path)
             else:
                 logging.warning(f"UI page neexistuje: {path}")
 
-        # Zkusíme files
-        if "files" in self.data:
-            ff = self.data["files"]
-            # Může to být list, string atp.
-            if isinstance(ff, list):
-                for item in ff:
-                    if isinstance(item, str):
-                        path = os.path.join(self.resource_path, item)
-                        if os.path.exists(path) and any(path.endswith(ext) for ext in [".html", ".css", ".js"]):
-                            self.ui_files.append(path)
-                    else:
-                        logging.warning(f"Soubor v 'files' není string: {item}")
-
-            elif isinstance(ff, str):
-                # Jediný string
-                path = os.path.join(self.resource_path, ff)
-                if os.path.exists(path) and any(path.endswith(ext) for ext in [".html", ".css", ".js"]):
-                    self.ui_files.append(path)
+        ff = self.data.get("files")
+        if ff is None:
+            ff = []
+        if isinstance(ff, str):
+            path = os.path.join(self.resource_path, ff)
+            if os.path.exists(path) and any(path.endswith(ext) for ext in [".html", ".css", ".js"]):
+                self.ui_files.append(path)
+        elif isinstance(ff, list):
+            for item in ff:
+                if isinstance(item, str):
+                    path = os.path.join(self.resource_path, item)
+                    if os.path.exists(path) and any(path.endswith(ext) for ext in [".html", ".css", ".js"]):
+                        self.ui_files.append(path)
+                else:
+                    logging.warning(f"Soubor v 'files' není string: {item}")
 
         logging.info(f"UI soubory: {self.ui_files}")
 
 # -------------------------------------------------------------------
 # Hlavní PyQt6 okno NUITester
 # -------------------------------------------------------------------
+
+
 class NUITester(QWidget):
     def __init__(self):
         super().__init__()
@@ -233,7 +276,7 @@ class NUITester(QWidget):
     def init_ui(self):
         main_layout = QVBoxLayout()
 
-        # 1) Zóna pro zadání resource cesty
+        # 1) Resource path
         resource_group = QGroupBox("Resource")
         resource_layout = QHBoxLayout()
 
@@ -248,7 +291,6 @@ class NUITester(QWidget):
         resource_group.setLayout(resource_layout)
         main_layout.addWidget(resource_group)
 
-        # Hlavní splitter - vlevo info, vpravo web
         splitter = QSplitter(Qt.Orientation.Horizontal)
         main_layout.addWidget(splitter)
 
@@ -256,7 +298,6 @@ class NUITester(QWidget):
         left_widget = QWidget()
         left_layout = QVBoxLayout()
 
-        # 2) Info o resource
         info_group = QGroupBox("Informace o Resource")
         info_layout = QVBoxLayout()
 
@@ -271,7 +312,7 @@ class NUITester(QWidget):
         info_group.setLayout(info_layout)
         left_layout.addWidget(info_group)
 
-        # 3) Testování NUI eventů
+        # Testování NUI
         test_group = QGroupBox("Testování NUI Eventů")
         test_layout = QFormLayout()
 
@@ -289,13 +330,14 @@ class NUITester(QWidget):
         test_group.setLayout(test_layout)
         left_layout.addWidget(test_group)
 
-        # 4) Historie NUI zpráv
+        # Historie
         history_group = QGroupBox("Historie NUI Zpráv")
         history_layout = QVBoxLayout()
 
         self.history_list = QListWidget()
         history_layout.addWidget(self.history_list)
-        self.history_list.itemClicked.connect(self.load_nui_message_from_history)
+        self.history_list.itemClicked.connect(
+            self.load_nui_message_from_history)
 
         nav_layout = QHBoxLayout()
         self.prev_button = QPushButton("Předchozí")
@@ -321,7 +363,6 @@ class NUITester(QWidget):
         self.setLayout(main_layout)
 
     def load_resource(self):
-        """Spustí analýzu resource a zobrazí informace."""
         resource_path = self.resource_path_input.text().strip()
         if not os.path.isdir(resource_path):
             QMessageBox.critical(self, "Chyba", "Neplatná cesta k resource!")
@@ -329,12 +370,21 @@ class NUITester(QWidget):
 
         try:
             self.resource_analyzer = ResourceAnalyzer(resource_path)
+            # <- Tady dojde k load_fxmanifest, konverzi atd.
             data = self.resource_analyzer.analyze()
+
+            # Po analyze:
+            # - self.resource_analyzer.nui_events by měly být vyplněné
+            # - self.resource_analyzer.ui_files taky
+
+            # Dej debug, jestli byly client_scripts
+            if "client_scripts" in data:
+                logging.info(
+                    f"Nalezené client_scripts: {data['client_scripts']}")
 
             self.nui_events = list(self.resource_analyzer.nui_events)
             self.ui_files = self.resource_analyzer.ui_files
 
-            # Zobrazíme eventy a files
             self.nui_events_list.clear()
             for event in self.nui_events:
                 self.nui_events_list.addItem(event)
@@ -346,13 +396,15 @@ class NUITester(QWidget):
             self.event_combo.clear()
             self.event_combo.addItems(self.nui_events)
 
-            # Zkusíme načíst .html do web_view
             html_files = [f for f in self.ui_files if f.endswith(".html")]
             if html_files:
                 html_file = html_files[0]
+                logging.info(
+                    f"Načítám HTML soubor do QWebEngineView: {html_file}")
                 with open(html_file, "r", encoding="utf-8") as f:
                     self.html_content = f.read()
-                base_url = QUrl.fromLocalFile(os.path.dirname(html_file) + os.sep)
+                base_url = QUrl.fromLocalFile(
+                    os.path.dirname(html_file) + os.sep)
                 self.web_view.setHtml(self.html_content, base_url)
 
             QMessageBox.information(self, "Úspěch", "Resource načten!")
@@ -361,13 +413,11 @@ class NUITester(QWidget):
         except FileNotFoundError as e:
             QMessageBox.critical(self, "Chyba", str(e))
             logging.error(f"Chyba: {e}")
-
         except Exception as e:
             QMessageBox.critical(self, "Chyba", f"Chyba při analýze: {e}")
             logging.error(f"Chyba při analýze: {e}")
 
     def send_nui_message(self):
-        """Simulace posílání NUI zprávy do webview (přes window.postMessage)."""
         event = self.event_combo.currentText()
         data_text = self.data_input.toPlainText()
 
@@ -376,17 +426,16 @@ class NUITester(QWidget):
             nui_message = NUIMessage(event, payload)
             msg_str = str(nui_message)
 
-            # Přidáme do historie
             self.nui_messages.append({"event": event, "data": payload})
             self.update_history_list()
             self.save_history()
 
-            # Zavoláme v JS: window.postMessage({ type: event, data: payload }, "*");
             js_code = f"window.postMessage({{type: '{event}', data: {json.dumps(payload)}}}, '*');"
             self.web_view.page().runJavaScript(js_code)
 
             print(f"Odeslána NUI message: {msg_str}")
-            QMessageBox.information(self, "Odesláno", f"Odeslána NUI message:\n{msg_str}")
+            QMessageBox.information(
+                self, "Odesláno", f"Odeslána NUI message:\n{msg_str}")
             logging.info(f"Odeslána NUI message: {msg_str}")
 
         except json.JSONDecodeError as e:
@@ -397,7 +446,6 @@ class NUITester(QWidget):
             logging.error(f"Chyba: {e}")
 
     def update_history_list(self):
-        """Aktualizuje zobrazení historie."""
         self.history_list.clear()
         for msg in self.nui_messages:
             item_text = f"Event: {msg['event']}"
@@ -405,7 +453,6 @@ class NUITester(QWidget):
             self.history_list.addItem(item)
 
     def load_history(self):
-        """Načte historii z JSON souboru."""
         if os.path.exists(self.history_file):
             try:
                 with open(self.history_file, "r", encoding="utf-8") as f:
@@ -416,7 +463,6 @@ class NUITester(QWidget):
                 logging.error(f"Error loading history: {e}")
 
     def save_history(self):
-        """Uloží historii do JSON souboru."""
         try:
             with open(self.history_file, "w", encoding="utf-8") as f:
                 json.dump(self.nui_messages, f, indent=2, ensure_ascii=False)
@@ -425,38 +471,37 @@ class NUITester(QWidget):
             logging.error(f"Error saving history: {e}")
 
     def load_nui_message_from_history(self, item):
-        """Když klikneme na položku v historii, načteme ji do vstupních polí."""
         index = self.history_list.row(item)
         if 0 <= index < len(self.nui_messages):
             msg = self.nui_messages[index]
             self.event_combo.setCurrentText(msg['event'])
-            self.data_input.setText(json.dumps(msg['data'], indent=4, ensure_ascii=False))
+            self.data_input.setText(json.dumps(
+                msg['data'], indent=4, ensure_ascii=False))
 
     def show_previous_message(self):
-        """Cyklicky zobrazí předchozí zprávu z historie."""
         if self.nui_messages:
-            self.current_nui_message_index = (self.current_nui_message_index - 1) % len(self.nui_messages)
+            self.current_nui_message_index = (
+                self.current_nui_message_index - 1) % len(self.nui_messages)
             self.load_message_from_index(self.current_nui_message_index)
 
     def show_next_message(self):
-        """Cyklicky zobrazí další zprávu z historie."""
         if self.nui_messages:
-            self.current_nui_message_index = (self.current_nui_message_index + 1) % len(self.nui_messages)
+            self.current_nui_message_index = (
+                self.current_nui_message_index + 1) % len(self.nui_messages)
             self.load_message_from_index(self.current_nui_message_index)
 
     def load_message_from_index(self, index):
-        """Pomocná funkce pro načtení zprávy podle indexu."""
         if 0 <= index < len(self.nui_messages):
             msg = self.nui_messages[index]
             self.event_combo.setCurrentText(msg['event'])
-            self.data_input.setText(json.dumps(msg['data'], indent=4, ensure_ascii=False))
+            self.data_input.setText(json.dumps(
+                msg['data'], indent=4, ensure_ascii=False))
             self.history_list.setCurrentRow(index)
 
 
-# -------------------------------------------------------------------
-# Spuštění aplikace
-# -------------------------------------------------------------------
 if __name__ == "__main__":
+    # Pomůže ověřit, že spouštíš tento soubor
+    print("### I'm the new code ###")
     app = QApplication(sys.argv)
     tester = NUITester()
     tester.show()

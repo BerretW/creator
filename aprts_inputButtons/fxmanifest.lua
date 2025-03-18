@@ -11,7 +11,9 @@ ui_page 'nui/index.html'
 client_scripts {
     'client/main.lua'
 }
-
+server_scripts {
+    
+}
 files {
     'nui/index.html',
     'nui/*.TTF',
