@@ -1,0 +1,13 @@
+C:\Users\Alois\GIT\creator\aprts_inputButtons
+
+
+
+{
+  "action": "open",
+  "prompt": "Zdravím Mousi, chceš pokračovat?",
+  "options": [
+    {"label": "Ano", "value": 1, "image": "check.png"},
+    {"label": "Ne", "value": 2, "image": "cross.png"}
+  ],
+  "backgroundImage": "black_paper.png"
+}

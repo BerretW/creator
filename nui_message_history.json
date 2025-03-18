@@ -26,5 +26,167 @@
       ],
       "backgroundImage": "black_paper.png"
     }
+  },
+  {
+    "event": "close",
+    "data": {}
+  },
+  {
+    "event": "selectOption",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovat?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
+  },
+  {
+    "event": "selectOption",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovat?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
+  },
+  {
+    "event": "open",
+    "data": {
+      "action": "open"
+    }
+  },
+  {
+    "event": "close",
+    "data": {
+      "action": "close"
+    }
+  },
+  {
+    "event": "open",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovat?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
+  },
+  {
+    "event": "openBook",
+    "data": {
+      "action": "openBook",
+      "pdfUrl": "https://api.westhavenrp.cz/storage/files/1741468713_0553f83780e707ff6f2c734aaaff78fa.pdf"
+    }
+  },
+  {
+    "event": "openBook",
+    "data": {
+      "action": "openBook",
+      "pdfUrl": "https://api.westhavenrp.cz/storage/files/1741468713_0553f83780e707ff6f2c734aaaff78fa.pdf"
+    }
+  },
+  {
+    "event": "loadInventory",
+    "data": {
+      "action": "loadInventory"
+    }
+  },
+  {
+    "event": "open",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovat?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
+  },
+  {
+    "event": "open",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovat?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
+  },
+  {
+    "event": "close",
+    "data": {
+      "type": "close"
+    }
+  },
+  {
+    "event": "open",
+    "data": {
+      "action": "open",
+      "prompt": "Zdravím Mousi, chceš pokračovatasdasd?",
+      "options": [
+        {
+          "label": "Ano",
+          "value": 1,
+          "image": "check.png"
+        },
+        {
+          "label": "Ne",
+          "value": 2,
+          "image": "cross.png"
+        }
+      ],
+      "backgroundImage": "black_paper.png"
+    }
   }
 ]
