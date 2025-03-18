@@ -1,0 +1,79 @@
+/* @font-face {
+	font-family: "Chinese Rocks";
+	src: url('CHINESER.TTF');
+} */
+
+@font-face {
+  font-family: "Chinese Rocks";
+  src: url("crock.ttf");
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  /* border: 5px solid #8b4513; */
+  color: #8b4513;
+}
+
+#nui-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: "Chinese Rocks";
+  /*alwqays uppercase*/
+  text-transform: uppercase;
+  /*bold*/
+  font-weight: bold;
+  transform: translate(-50%, -50%);
+  background-color: #211600; /* Pevná barva pozadí */
+  /* border: 5px solid #8b4513; */
+  padding: 80px;
+  border-radius: 10px;
+  text-align: center;
+  /* width: 400px; */
+  /* height: 800px; */
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#prompt {
+  font-size: 24px;
+  color: #8b4513;
+  margin-bottom: 20px;
+}
+
+.button {
+  background-color: #ffffff; /* Pevná barva tlačítka */
+  /* border: 2px solid #e4b90a; */
+  color: #8b4513;
+  padding: 10px 20px;
+  /*alwqays uppercase*/
+  text-transform: uppercase;
+  /*bold*/
+  font-weight: bold;
+  font-family: "Chinese Rocks";
+  font-size: 20px;
+  cursor: pointer;
+  margin: 5px;
+  border-radius: 5px;
+  width: auto;
+  height: auto;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.button.with-image {
+  background-color: transparent; /* Pokud má tlačítko obrázek, pozadí je průhledné */
+  border: none;
+  color: transparent; /* Skryjeme text, pokud je obrázek */
+  width: 100px;
+  height: 100px;
+}
+
+.button:hover {
+  opacity: 0.8;
+  background-color: #ea8d30; /* Pevná barva tlačítka */
+}
