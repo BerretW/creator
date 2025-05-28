@@ -34,18 +34,6 @@ Citizen.CreateThread(function()
 
     end
 
-    -- exports.vorp_inventory:registerUsableItem(Config.railing1Item, function(data)
-    --     local _source = data.source
-    --     exports.vorp_inventory:closeInventory(data.source)
-    --     exports.vorp_inventory:subItem(_source, Config.railing1Item, 1)
-    --     TriggerClientEvent('aprts_ranch:Client:placeRailing', _source,"p_mp_feedbaghang01x")
-    -- end)
-    -- exports.vorp_inventory:registerUsableItem("tool_feeding_trough_upgrade1", function(data)
-    --     local _source = data.source
-    --     exports.vorp_inventory:closeInventory(data.source)
-    --     exports.vorp_inventory:subItem(_source, "tool_feeding_trough_upgrade1", 1)
-    --     TriggerClientEvent('aprts_ranch:Client:tryUpgrade', _source,"p_feedtrough01x")
-    -- end)
 
 
 

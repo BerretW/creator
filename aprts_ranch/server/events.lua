@@ -1,70 +1,3 @@
--- CREATE TABLE IF NOT EXISTS `aprts_ranch_config_animals` (
---   `animal_id` int(11) NOT NULL AUTO_INCREMENT,
---   `name` varchar(255) NOT NULL,
---   `price` int(11) NOT NULL,
---   `model` varchar(255) NOT NULL,
---   `m_model` varchar(255) NOT NULL,
---   `health` int(11) NOT NULL,
---   `adultAge` int(11) NOT NULL,
---   `WalkOnly` tinyint(1) NOT NULL,
---   `offsetX` float NOT NULL,
---   `offsetY` float NOT NULL,
---   `offsetZ` float NOT NULL,
---   `food` int(11) NOT NULL,
---   `water` int(11) NOT NULL,
---   `foodMax` int(11) NOT NULL,
---   `waterMax` int(11) NOT NULL,
---   `kibble` varchar(255) NOT NULL,
---   `kibbleFood` int(11) NOT NULL,
---   `poop` varchar(255) NOT NULL,
---   `poopChance` float NOT NULL,
---   `dieAge` int(11) NOT NULL,
---   `pregnancyTime` int(11) NOT NULL,
---   `pregnancyChance` int(11) NOT NULL,
---   `noFuckTime` int(11) NOT NULL,
---   PRIMARY KEY (`animal_id`),
---   UNIQUE KEY `name` (`name`)
--- ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- -- Exportování dat pro tabulku s29_dev-redm.aprts_ranch_config_animals: ~5 rows (přibližně)
--- INSERT INTO `aprts_ranch_config_animals` (`animal_id`, `name`, `price`, `model`, `m_model`, `health`, `adultAge`, `WalkOnly`, `offsetX`, `offsetY`, `offsetZ`, `food`, `water`, `foodMax`, `waterMax`, `kibble`, `kibbleFood`, `poop`, `poopChance`, `dieAge`, `pregnancyTime`, `pregnancyChance`, `noFuckTime`) VALUES
--- 	(1, 'Goat', 10, 'a_c_goat_01', 'a_c_bighornram_01', 100, 3, 0, 0, 2, 0, 2, 3, 48, 72, 'product_carrot', 14, 'p_poop01x', 0.3, 12, 1, 20, 1),
--- 	(2, 'Cow', 10, 'a_c_cow', 'a_c_bull_01', 300, 5, 0, 0, 2, 0, 25, 25, 600, 360, 'animal_silage', 200, 's_horsepoop01x', 0.4, 20, 1, 20, 1),
--- 	(3, 'Chicken1', 10, 'a_c_chicken_01', 'a_c_rooster_01', 50, 2, 0, 0, 2, 0, 1, 1, 24, 24, 'product_wheat', 10, 'p_poop01x', 0.1, 10, 1, 20, 1),
--- 	(4, 'sheep', 10, 'a_c_sheep_01', 'mp_a_c_bighornram_01', 50, 2, 0, 0, 2, 0, 2, 2, 48, 48, 'product_grass', 14, 'p_sheeppoop01x', 0.1, 12, 1, 70, 1),
--- 	(5, 'pig', 10, 'a_c_pig_01', 'a_c_pig_01', 50, 3, 0, 0, 2, 0, 2, 2, 120, 120, 'product_grass', 30, 'p_sheeppoop01x', 0.1, 10, 1, 70, 1);
--- -- Exportování struktury pro tabulka s29_dev-redm.aprts_ranch_config_animal_products
--- CREATE TABLE IF NOT EXISTS `aprts_ranch_config_animal_products` (
---   `product_id` int(11) NOT NULL AUTO_INCREMENT,
---   `animal_id` int(11) NOT NULL,
---   `name` varchar(255) NOT NULL,
---   `item` varchar(255) NOT NULL,
---   `prop` varchar(255) DEFAULT NULL,
---   `gather` int(11) NOT NULL,
---   `amount` int(11) NOT NULL,
---   `maxAmount` int(11) DEFAULT NULL,
---   `lifetime` int(11) NOT NULL,
---   `tool` varchar(255) DEFAULT NULL,
---   `anim` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`anim`)),
---   `chance` int(11) NOT NULL,
---   `gender` varchar(255) DEFAULT NULL,
---   PRIMARY KEY (`product_id`),
---   KEY `animal_id` (`animal_id`),
---   CONSTRAINT `aprts_ranch_config_animal_products_ibfk_1` FOREIGN KEY (`animal_id`) REFERENCES `aprts_ranch_config_animals` (`animal_id`) ON DELETE CASCADE
--- ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- -- Exportování dat pro tabulku s29_dev-redm.aprts_ranch_config_animal_products: ~12 rows (přibližně)
--- INSERT INTO `aprts_ranch_config_animal_products` (`product_id`, `animal_id`, `name`, `item`, `prop`, `gather`, `amount`, `maxAmount`, `lifetime`, `tool`, `anim`, `chance`, `gender`) VALUES
--- 	(1, 1, 'Kozí Mléko', 'animal_goat_milk', NULL, 2, 1, 3, 10800, 'tool_empty_bucket', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 100, 'female'),
--- 	(2, 1, 'Zvířecí roh', 'animal_horn', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 100, NULL),
--- 	(3, 1, 'Zvířecí kůže', 'animal_pelt', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 100, NULL),
--- 	(4, 3, 'Vejce', 'animal_egg', 'p_egg01x', 3, 1, 10, 10800, 'tool_basket', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 30, 'female'),
--- 	(5, 3, 'Maso', 'animal_chicken_meat', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(6, 3, 'Peří', 'animal_feathers', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(7, 4, 'Vlna', 'animal_wool', NULL, 2, 1, 10, 10800, 'tool_scissors', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(8, 4, 'Ovcí mléko', 'animal_sheep_milk', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, 'female'),
--- 	(9, 4, 'Maso', 'animal_meat', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(10, 4, 'Vlna', 'animal_wool', NULL, 1, 1, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(11, 5, 'Štetiny', 'animal_pighair', NULL, 2, 1, 10, 10800, 'tool_scissors', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL),
--- 	(12, 5, 'Maso', 'animal_boar_meat', NULL, 1, 4, NULL, 10800, '', '{"dict": "mech_animal_interaction@horse@left@brushing", "name": "idle_a", "time": 10000, "flag": 17, "type": "standard", "prop": null}', 60, NULL);
 MySQL = exports.oxmysql
 
 ranches = {}
@@ -191,6 +124,8 @@ function unixToDateTime(unixTime)
     return os.date('%Y-%m-%d %H:%M:%S', unixTime)
 end
 
+
+
 RegisterServerEvent("aprts_ranch:Server:putAnimal")
 AddEventHandler("aprts_ranch:Server:putAnimal", function(railingID, newanimal)
     local _source = source
@@ -212,26 +147,53 @@ AddEventHandler("aprts_ranch:Server:putAnimal", function(railingID, newanimal)
             animal.home = 1
             animal.food = math.max(0, animal.food)
             animal.water = math.max(0, animal.water)
-            -- update all parameters from newanimal, in DB
-            -- ošetření reálnosti a správnosti animal.born, animal.pregnantStart
 
-            if animal.born == nil or animal.born == 0 then
-                animal.born = getTimeStamp()
+            -- Helper function to ensure timestamp is in seconds
+            local function normalize_timestamp_to_seconds(value)
+                if value == nil or value == 0 then
+                    return getTimeStamp() -- Returns seconds
+                end
+
+                local num_value
+                if type(value) == "string" then
+                    num_value = tonumber(value)
+                    if not num_value then
+                        -- Invalid string, default to current time in seconds
+                        return getTimeStamp()
+                    end
+                elseif type(value) == "number" then
+                    num_value = value
+                else
+                    -- Unknown type, default to current time in seconds
+                    return getTimeStamp()
+                end
+
+                -- If the numeric value is very large (e.g., typical millisecond range like 12-13 digits or more)
+                -- Unix timestamps in seconds are usually 10 digits.
+                -- 100,000,000,000 (10^11) is a threshold; values larger are likely milliseconds.
+                if num_value >= 100000000000 then -- If it has at least 12 digits, it's likely ms
+                    return math.floor(num_value / 1000)
+                else
+                    -- Assume it's already in seconds
+                    return math.floor(num_value)
+                end
             end
-            if animal.pregnantStart == nil or animal.pregnantStart == 0 then
-                animal.pregnantStart = getTimeStamp()
-            end
-            if type(animal.born) == "string" and string.len(animal.born) > 10 then
-                animal.born = tonumber(animal.born) / 1000 -- convert to seconds
-            end
-            if type(animal.pregnantStart) == "string" and string.len(animal.pregnantStart) > 10 then
-                animal.pregnantStart = tonumber(animal.pregnantStart) / 1000 -- convert to seconds
-            end
+
+            animal.born = normalize_timestamp_to_seconds(animal.born)
+            animal.pregnantStart = normalize_timestamp_to_seconds(animal.pregnantStart)
+            local current_time_seconds_for_updated = getTimeStamp() -- for 'updated' field
+
             MySQL:execute(
                 "UPDATE aprts_ranch_animals SET railing_id = ?, home = ?, coords = ?, health = ?, food = ?, water = ?, clean = ?, sick = ?, happynes = ?, energy = ?, age = ?, quality = ?, count = ?, born = FROM_UNIXTIME(?), pregnantStart =FROM_UNIXTIME(?), updated = FROM_UNIXTIME(?),xp= ?, meta = ? WHERE id = ?",
                 {railingID, 1, json.encode(railing.coords), animal.health, animal.food, animal.water, animal.clean,
-                 animal.sick, animal.happynes, animal.energy, animal.age, animal.quality, animal.count, animal.born,
-                 animal.pregnantStart, getTimeStamp(), animal.xp, json.encode(animal.meta), animal.id}, function(result)
+                 animal.sick, animal.happynes, animal.energy, animal.age, animal.quality, animal.count,
+                 animal.born,             -- Should now be in seconds
+                 animal.pregnantStart,    -- Should now be in seconds
+                 current_time_seconds_for_updated, -- Already in seconds
+                 animal.xp, json.encode(animal.meta), animal.id}, function(result)
+                    if result == 0 then
+                        print("[ERROR] aprts_ranch:Server:putAnimal - Failed to update animal ID: " .. animal.id)
+                    end
                 end)
 
             TriggerClientEvent('aprts_ranch:Client:updateAnimal', -1, animal)
@@ -247,6 +209,7 @@ AddEventHandler("aprts_ranch:Server:putAnimal", function(railingID, newanimal)
         notify(_source, "Animal not found.")
     end
 end)
+
 
 RegisterServerEvent("aprts_ranch:Server:addAnimal")
 AddEventHandler("aprts_ranch:Server:addAnimal", function(railingID, animalBreed, gender, meta)
@@ -1086,36 +1049,7 @@ AddEventHandler("aprts_ranch:Server:removeMoney", function(amount)
     character.removeCurrency(0, amount)
 end)
 
--- AddEventHandler('entityCreating', function(entity)
---     local type = GetEntityType(entity)
---     if type == 1 then
---         local coords = GetEntityCoords(entity)
---         local blackCoords = vector3(1377.533936, 298.508057, 88.011330)
---         local size = 50.0
---         if table.count(ranches) < 1 then
---             return
---         end
---         for _, ranch in pairs(ranches) do
---             -- transform ranch.coords to vector3
---             local ranch_coords = vector3(ranch.coords.x, ranch.coords.y, ranch.coords.z)
 
---             if #(coords - ranch_coords) < size then
---                 CancelEvent()
---             end
---         end
---         -- if #(coords - blackCoords) < size then
---         --     local model = GetEntityModel(entity)
---         --     -- print("Spawn of Entity: " .. entity .. " with model hash : " .. model)
---         --     CancelEvent()
---         --     -- if model == -50684386 or model == 556355544 then
---         --     --     print("Blocked")
---         --     --     CancelEvent()
---         --     -- end
---         -- end
---     end
---     -- print("Entity: " .. entity .. " PopulationType: " .. GetEntityPopulationType(entity))
-
--- end)
 RegisterServerEvent("aprts_ranch:server:sellAnimal")
 AddEventHandler("aprts_ranch:server:sellAnimal", function(animal)
     local _source = source
