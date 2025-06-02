@@ -1,27 +1,21 @@
-runningAnimation = nil
+local runningAnimation = nil
 local mainProp = nil
 local Anim = Config.Animation
-Progressbar = exports["feather-progressbar"]:initiate()
 
 function PlayAnimation(Anim)
-    while runningAnimation do
-        Citizen.Wait(100)
-    end
-    FreezeEntityPosition(PlayerPedId(), true)
-    local tempTool = exports.aprts_tools:GetEquipedTool()
-    -- debugPrint("Playing animation: " .. Anim.dict)
-    if Anim.prop then
-        -- exports.aprts_tools:UnequipTool()
-        EquipTool(Anim.prop)
+    print("Playing animation: " .. Anim.dict)
+    if time == nil then
+        time = 8000
     end
 
+    EquipTool(Anim.prop)
+
     StartAnimation(Anim)
-    Progressbar.start("Něco děláš", Anim.time, nil, 'linear', 'rgb(47, 155, 182)', '20vw', 'rgba(88, 88, 88, 0.52)', 'rgba(211, 11, 21, 0.5)')
     Citizen.Wait(Anim.time)
     EndAnimation()
-    UnEquipTool()
-    FreezeEntityPosition(PlayerPedId(), false)
-    -- exports.aprts_tools:EquipTool(tempTool)
+    if equipProp then
+        UnEquipTool()
+    end
 end
 
 function EquipTool(prop)
@@ -30,7 +24,7 @@ function EquipTool(prop)
         DeleteObject(mainProp)
     end
 
-    -- debugPrint("Equipping tool: " .. prop.model)
+    print("Equipping tool: " .. prop.model)
     local ped = PlayerPedId()
     local x, y, z = table.unpack(GetEntityCoords(ped, true))
     mainProp = CreateObject(prop.model, x, y, z + 0.2, true, true, true)
@@ -41,10 +35,9 @@ end
 
 function UnEquipTool()
     if mainProp then
-        tool_equiped = nil
         DeleteEntity(mainProp)
     else
-        -- debugPrint("No prop to unequip")
+        print("No prop to unequip")
     end
 end
 
